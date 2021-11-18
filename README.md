@@ -1,2 +1,3 @@
-# higher
-Source base for MIPT course project
+# Higher
+
+Rogue-like game where you climb a falling tower
