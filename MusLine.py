@@ -2,54 +2,68 @@ import pygame
 import os.path
 import json
 
+
 class Line:
     """
     a class that contains the data of the music line
     Handles unpacking new beats from a file, and validating whether any beats are in the active zone or not
     """
+
     def __init__(self, pos: tuple[int, int], width: int, filename: str, timeloop: int):
         """
         :param pos: the position (x, y) of the center of the line
         :param width: the width of the line
         :param filename: the name of the file that the line will extract beat data from
-        :param timeloop: the amount of frames the beats will be visible on the line
+        :param timeloop: the amount of milliseconds the beats will be visible on the line
         """
+        self.birthtime = pygame.time.get_ticks()
+        self.time = 0
         self.filepath = os.path.join('resources', 'beatlines', filename)
         self.timeloop = timeloop
         self.pos = pos
         self.width = width
+
+        #extracting beats for the first time interval
         self.beats = []
-        self.time = 0
+        self.last_update = -100000
+        self.unpack(0, 2*timeloop)
 
     def update(self):
         '''
         updates self.time,
         unpacks extra beats once in self.timeloop
-        kills beats that have finished their lifespan
+        kills beats that have finished their lifespan and updates the live ones
         '''
-        if self.time % self.timeloop == 0:
-            self.unpack(self.time + self.timeloop, self.time + self.timeloop * 2)
+        # update time
+        self.time = pygame.time.get_ticks() - self.birthtime
+
+        # unpack beats for the next loop
+        if self.time - self.last_update >= 0.9*self.timeloop:
+            self.unpack(self.time + self.timeloop, self.time + 2*self.timeloop)
+
+        # kill beats that have reached the end of the line and updates the live ones
         if self.beats:
-            if self.beats[0].time-self.time == -int(self.timeloop / 2):
+            if self.beats[0].time - self.time <= -int(self.timeloop / 2):
                 self.beats.pop(0)
             for beat in self.beats:
                 beat.update()
-        self.time += 1
 
     def unpack(self, start_time: int, end_time: int):
         """
         unpacks beats from the self.filepath file
-        :param start_time: the first frame from which the beats will be unpacked
-        :param end_time: the last frame to which the beats will be unpacked
+        :param start_time: the first millisecond from which the beats will be unpacked
+        :param end_time: the last millisecond to which the beats will be unpacked
         :return: None, instead appends Beat objects to self.beats
         """
         with open(self.filepath, 'r') as f:
-            beatvector = json.load(f)
-            for pair in beatvector:  # this is too slow but im tired and can't be fucked, #fixme
-                if pair[0] >= start_time:
-                    if pair[0] >= end_time:
+            V = f.readlines()
+            for T in V:
+                T = int(float(T.strip()) * 1000)
+                if T >= max(start_time, self.last_update + 2000):
+                    if T >= end_time:
                         break
-                    self.beats.append(DrawableBeat(self, pair[0], pair[1]))
+                    self.beats.append(DrawableBeat(self, int(T), 200))#todo fix timeframe for beats
+        self.last_update = self.time
 
     def is_active(self):
         """
@@ -60,6 +74,7 @@ class Line:
             if beat.is_active():
                 return True
         return False
+
 
 class DrawableLine(Line):
     """a class that adds visual rendering to the line class"""
@@ -88,10 +103,9 @@ class DrawableLine(Line):
         :param timeloop: the amount of frames the beats will be visible on the line
         """
         super().__init__(pos, width, filename, timeloop)
-        self.initiate_images((width, int(width/26)))
+        self.initiate_images((width, int(width / 26)))
         self.rect = self.image.get_rect()
         self.pointer_rect = self.pointer_image.get_rect()
-
 
     def render(self, screen: pygame.Surface):
         """
@@ -103,22 +117,25 @@ class DrawableLine(Line):
         self.pointer_rect.center = self.pos
         screen.blit(self.image, self.rect)
         for beat in self.beats:
-            beat.render(screen)
+            if beat.time <= self.time + self.timeloop/2:
+                beat.render(screen)
         screen.blit(self.pointer_image, self.pointer_rect)
+
 
 class Beat:
     """A singular beat on a line"""
+
     def __init__(self, line, time, timeframe):
         """
         :param line: parent BeatLine of the beat
-        :param time: the amount of frames this beat should be active from the creation of the beatline
-        :param timeframe: the amount of frames this beat will be active for
+        :param time: the amount of milliseconds this beat should become centered after, from the start of the song
+        :param timeframe: the amount of milliseconds this beat will be active for
         """
         self.line = line
-        self.step = int(line.width/line.timeloop)
+        self.step = line.width / line.timeloop  # a step is the amount of pixels the beat should travel in 1 sec, type float
         self.time = time
         self.timeframe = timeframe
-        self.x = self.line.pos[0] + self.step * (self.time - self.line.time)
+        self.x = self.line.pos[0] + int(self.step * (self.time - self.line.time))
         self.y = self.line.pos[1]
 
     def is_active(self):
@@ -126,18 +143,18 @@ class Beat:
         checks whether the beat is active by comparing the time difference between it and the BeatLine to the timeframe
         :return: bool
         """
-        return abs(self.time - self.line.time) < self.timeframe/2
+        return abs(self.time - self.line.time) < self.timeframe / 2
 
     def update(self):
         """
         updates the position of the beat
         """
-        self.x = self.line.pos[0] + self.step * (self.time - self.line.time)
+        self.x = self.line.pos[0] + int(self.step * (self.time - self.line.time))
 
 
 class DrawableBeat(Beat):
 
-    def initiate_images(self, size:tuple[int, int]=(10, 40)):
+    def initiate_images(self, size: tuple[int, int] = (10, 40)):
         """
         unpacks&resizes images from files
         :param size: size(width, height) of the beat
@@ -175,10 +192,14 @@ class DrawableBeat(Beat):
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
-    beatline = DrawableLine((400, 300), 320, 'Beatline 1.json', 120)
+    beatline = DrawableLine((400, 300), 320, 'Opening Animal Crossing.mp3.txt', 1000)
     clock = pygame.time.Clock()
     FPS = 60
     finished = False
+
+    pygame.mixer.music.load(os.path.join('resources', 'music', 'Opening Animal Crossing.mp3'))
+    pygame.mixer.music.play()
+    score = 1
     while not finished:
         screen.fill((255, 255, 255))
         clock.tick(FPS)
@@ -189,7 +210,8 @@ if __name__ == '__main__':
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     if beatline.is_active():
-                        print('yay')
+                        print(score)
+                        score +=1
 
         beatline.update()
         beatline.render(screen)
