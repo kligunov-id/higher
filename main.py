@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 import pygame
 
-FPS = 60
-WIDTH, HEIGHT = 1200, 600
+from locals import *
 
 class GameState(ABC):
     """ Abstract class responsible for controlling all game elements:
@@ -103,7 +102,7 @@ def main():
 
         # Updates screen
         pygame.display.update()
-        screen.fill((0, 0, 0))
+        screen.fill(BLACK)
     pygame.quit()
 
 if __name__ == '__main__':
