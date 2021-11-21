@@ -57,7 +57,7 @@ class MainMenu(GameState):
     def __init__(self):
         """ Initializes menu with buttons """
         def start_game():
-             self.game.switch_to(MainMenu())
+             self.game.switch_to(GameOver())
 
         self.start_button = Button(TEXT_START, (WIDTH / 2, 0.4 * HEIGHT), action=start_game)
         self.quit_button = Button(TEXT_QUIT, (WIDTH / 2, 0.6 * HEIGHT), action=exit)
@@ -92,6 +92,51 @@ class MainMenu(GameState):
         if event.type == pygame.MOUSEBUTTONDOWN:
             for button in self.buttons:
                 button.handle(event)
+
+class GameOver(GameState):
+    """ Represents the game over screen """
+
+    def __init__(self):
+        """ Initializes menu with buttons """
+        def return_to_menu():
+             self.game.switch_to(MainMenu())
+        def restart_game():
+            self.game.switch_to(GameOver())
+
+        self.restart_button = Button(TEXT_RESTART, (WIDTH / 2, 0.6 * HEIGHT), action=restart_game)
+        self.menu_button = Button(TEXT_BACK_MENU, (WIDTH / 2, 0.8 * HEIGHT), action=return_to_menu)
+        self.buttons = [self.restart_button, self.menu_button]
+        
+        self.font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE)
+
+    def render(self) -> pygame.Surface:
+        """ Renders game over message and menu buttons
+        :returns: PyGame surface with the result
+        """
+        screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+
+        text_surface = self.font.render(TEXT_GAME_OVER, True, Color.WHITE)
+        text_rect = text_surface.get_rect(center = (WIDTH / 2, 0.1 * HEIGHT))
+        screen.blit(text_surface, text_rect)
+
+        for button in self.buttons:
+            button.render(screen)
+        
+        return screen
+
+    def update(self) -> None:
+        """ Animates buttons """
+        for button in self.buttons:
+            button.update()
+
+    def handle(self, event: pygame.event.Event) -> None:
+        """ Handles mouse clicks
+        :param event: PyGame event to be handled
+        """
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            for button in self.buttons:
+                button.handle(event)
+
 
 
 def main():

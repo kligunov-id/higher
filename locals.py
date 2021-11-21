@@ -14,7 +14,7 @@ Constants:
     FONT_NAME, FONT_SIZE
     
     TITLE
-    TEXT_START, TEXT_QUIT, TEXT_BACK_MENU
+    TEXT_START, TEXT_QUIT, TEXT_BACK_MENU, TEXT_RESTART, TEXT_GAME_OVER
 """
 
 class Color:
@@ -46,3 +46,5 @@ TITLE = "Higher"
 TEXT_START = "New Game"
 TEXT_QUIT = "Quit"
 TEXT_BACK_MENU = "Back to Menu"
+TEXT_RESTART = "Play Again"
+TEXT_GAME_OVER = "Game over!"
