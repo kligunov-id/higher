@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
+from os import path
 import pygame
 
 from locals import *
+from button import Button
 
 class GameState(ABC):
     """ Abstract class responsible for controlling all game elements:
@@ -35,7 +37,7 @@ class Game:
     """ Wrapper class which resposibility is to allow state switching """
     def __init__(self):
         """ Initializes the only memeber """
-        self.switch_to(MockState())
+        self.switch_to(MainMenu())
 
     def switch_to(self, new_state: GameState):
         """ Changes game state
@@ -49,30 +51,47 @@ class Game:
         self.handle = self.state.handle
         self.update = self.state.update
 
-class MockState(GameState):
-    """ Game state without any functionality """
+class MainMenu(GameState):
+    """ Represents the starting menu """
     
     def __init__(self):
-        """ Initializes --- """
-        super().__init__()
+        """ Initializes menu with buttons """
+        def start_game():
+             self.game.switch_to(MainMenu())
+
+        self.start_button = Button(TEXT_START, (WIDTH / 2, 0.4 * HEIGHT), action=start_game)
+        self.quit_button = Button(TEXT_QUIT, (WIDTH / 2, 0.6 * HEIGHT), action=exit)
+        self.buttons = [self.start_button, self.quit_button]
+        
+        self.font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE)
 
     def render(self) -> pygame.Surface:
-        """ Creates blank screen
+        """ Renders title and menu buttons
         :returns: PyGame surface with the result
         """
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+
+        text_surface = self.font.render(TITLE, True, Color.WHITE)
+        text_rect = text_surface.get_rect(center = (WIDTH / 2, 0.1 * HEIGHT))
+        screen.blit(text_surface, text_rect)
+
+        for button in self.buttons:
+            button.render(screen)
+        
         return screen
 
     def update(self) -> None:
-        """ Calculates new state """
-        pass
+        """ Animates buttons """
+        for button in self.buttons:
+            button.update()
 
     def handle(self, event: pygame.event.Event) -> None:
         """ Handles mouse clicks
         :param event: PyGame event to be handled
         """
         if event.type == pygame.MOUSEBUTTONDOWN:
-            pygame.event.post(pygame.event.Event(pygame.QUIT))
+            for button in self.buttons:
+                button.handle(event)
 
 
 def main():
@@ -102,7 +121,7 @@ def main():
 
         # Updates screen
         pygame.display.update()
-        screen.fill(BLACK)
+        screen.fill(Color.BLACK)
     pygame.quit()
 
 if __name__ == '__main__':

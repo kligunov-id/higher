@@ -12,7 +12,9 @@ Constants:
     FPS
     WIDTH, HEIGHT
     FONT_NAME, FONT_SIZE
-
+    
+    TITLE
+    TEXT_START, TEXT_QUIT, TEXT_BACK_MENU
 """
 
 class Color:
@@ -38,3 +40,9 @@ WIDTH, HEIGHT = 1280, 720
 # Font
 FONT_NAME = "SUPERSCR.TTF"
 FONT_SIZE = 50
+
+# In-game text
+TITLE = "Higher"
+TEXT_START = "New Game"
+TEXT_QUIT = "Quit"
+TEXT_BACK_MENU = "Back to Menu"
