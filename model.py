@@ -54,10 +54,14 @@ class Tower:
         self.level += 1
 
     def is_inside(self, pos: tuple[int, int]) -> bool:
-        pass
+        """ :returns: True if pos is a valid cell """
+        x, y = pos
+        return 0 <= x and x <= Tower.WIDTH
 
     def is_empty(self, pos: tuple[int, int]) -> bool:
-        pass
+        """ :returns: True if player can stay in the cell """
+        x, y = pos
+        return self.is_inside(pos) and self.cells[y % len(self.cells[0])][x] is Cell.EMPTY;
 
     def update(self) -> None:
         """ For now tower has no animation or progression """
@@ -65,7 +69,7 @@ class Tower:
 
     def handle(self, event: pygame.event.Event) -> None:
         """ """
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.KEYDOWN:
             self.move_floor()
 
     @staticmethod
@@ -88,6 +92,51 @@ class Tower:
                 color = Color.DEEP_BLUE if self.cells[(i + self.level) % len(self.cells[0])][j] is Cell.WALL else Color.BLACK
                 square(screen, color, Tower.calc_center((i, j)), a)
 
+class Player:
+    """ Responsible for player moving, rendering """
+
+    def __init__(self, tower:Tower):
+        """ Initializes starting position """
+        self.x, self.y = Tower.WIDTH // 2, 3
+        self.tower = tower
+
+    def move(self, dx, dy) -> bool:
+        """ Moves player if possible """
+        new_x, new_y = self.x + dx, self.y + dy
+        if tower.is_empty((new_x, new_y)):
+            self.x = self.x + dx
+            self.y = self.y + dy
+
+    def update(self) -> None:
+        """ For now tower has no animation or progression """
+        pass
+
+    def handle(self, event: pygame.event.Event) -> None:
+        """ Handles WASD movement
+        :param event: Event to be handled, should be of KEYDOWN type """
+        if event.type != pygame.KEYDOWN:
+            return
+        if event.key == pygame.K_w:
+            self.move(0, 1)
+        elif event.key == pygame.K_s:
+            self.move(0, -1)
+        elif event.key == pygame.K_a:
+            self.move(-1, 0)
+        elif event.key == pygame.K_d:
+            self.move(1, 0)
+        elif event.key == pygame.K_SPACE:
+            self.move(0, 3)
+
+    def render(self, screen: pygame.Surface) -> None:
+        """
+        :param screen: pygame surface to blit image on """
+        a = 0.8 * HEIGHT / Tower.HEIGHT
+        square(screen, Color.MAGENTA, Tower.calc_center((self.y - self.tower.level, self.x)), a)
+    
+    def is_alive(self) -> bool:
+        """:returns: True if player is still visible """
+        return self.y >= self.tower.level
+
 if __name__ == '__main__':
     print(Cell.WALL)
     pygame.init()
@@ -96,6 +145,8 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     tower = Tower()
+    player = Player(tower)
+
     clock = pygame.time.Clock()
     finished = False
 
@@ -108,9 +159,13 @@ if __name__ == '__main__':
                 finished = True
             else:
                 tower.handle(event)
+                player.handle(event)
 
         tower.update()
+        player.update()
+
         tower.render(screen)
+        player.render(screen)
 
         # Updates screen
         pygame.display.update()
