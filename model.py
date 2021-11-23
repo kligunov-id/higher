@@ -103,7 +103,7 @@ class Player:
     def move(self, dx, dy) -> bool:
         """ Moves player if possible """
         new_x, new_y = self.x + dx, self.y + dy
-        if tower.is_empty((new_x, new_y)):
+        if self.tower.is_empty((new_x, new_y)):
             self.x = self.x + dx
             self.y = self.y + dy
 
