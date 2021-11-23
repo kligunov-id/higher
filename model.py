@@ -125,8 +125,6 @@ class Player:
             self.move(-1, 0)
         elif event.key == pygame.K_d:
             self.move(1, 0)
-        elif event.key == pygame.K_SPACE:
-            self.move(0, 3)
 
     def render(self, screen: pygame.Surface) -> None:
         """
