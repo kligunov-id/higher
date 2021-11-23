@@ -57,7 +57,7 @@ class MainMenu(GameState):
     def __init__(self):
         """ Initializes menu with buttons """
         def start_game():
-             self.game.switch_to(GameOver())
+             self.game.switch_to(GameSession())
 
         self.start_button = Button(TEXT_START, (WIDTH / 2, 0.4 * HEIGHT), action=start_game)
         self.quit_button = Button(TEXT_QUIT, (WIDTH / 2, 0.6 * HEIGHT), action=exit)
@@ -98,10 +98,12 @@ class GameOver(GameState):
 
     def __init__(self):
         """ Initializes menu with buttons """
+        # TODO: add score argument
+
         def return_to_menu():
              self.game.switch_to(MainMenu())
         def restart_game():
-            self.game.switch_to(GameOver())
+            self.game.switch_to(GameSession())
 
         self.restart_button = Button(TEXT_RESTART, (WIDTH / 2, 0.6 * HEIGHT), action=restart_game)
         self.menu_button = Button(TEXT_BACK_MENU, (WIDTH / 2, 0.8 * HEIGHT), action=return_to_menu)
@@ -113,6 +115,7 @@ class GameOver(GameState):
         """ Renders game over message and menu buttons
         :returns: PyGame surface with the result
         """
+        # TODO: Render score
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 
         text_surface = self.font.render(TEXT_GAME_OVER, True, Color.WHITE)
@@ -137,6 +140,42 @@ class GameOver(GameState):
             for button in self.buttons:
                 button.handle(event)
 
+class GameSession(GameState):
+    """ Represents game engine """
+
+    def __init__(self):
+        """ Initializes all game elements: 
+            * Tower 
+            * Player
+            * Bitline
+            * Abilities
+        """
+        # TODO: Initialize
+        # TODO: Create abilities
+        # TODO: self.dynamic_elements = []
+        pass
+
+    def render(self) -> pygame.Surface:
+        """ Renders tower, player, abilities' icons 
+        :returns: PyGame surface with the result
+        """
+        screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        
+        # TODO: render dynamic elements
+
+        return screen
+
+    def update(self) -> None:
+        """ Ends game when player falls off the screen """
+        # TODO: if self.player.is_alive switch state, send score
+        pass
+
+    def handle(self, event: pygame.event.Event) -> None:
+        """ Handles keystrokes
+        :param event: PyGame event to be handled
+        """
+        # TODO: Pass KEYDOWN events to dynamic elements
+        pass
 
 
 def main():
