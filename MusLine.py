@@ -48,6 +48,10 @@ class Line:
             for beat in self.beats:
                 beat.update()
 
+    def handle(self, event):
+        """a placeholder function for handling events"""
+        pass
+
     def unpack(self, start_time: int, end_time: int):
         """
         unpacks beats from the self.filepath file
@@ -74,6 +78,12 @@ class Line:
             if beat.is_active():
                 return True
         return False
+
+    def deactivate(self):
+        """prevents any active beats from being active in the future"""
+        for beat in self.beats:
+            if beat.is_active():
+                beat.deactivate()
 
 
 class DrawableLine(Line):
@@ -137,13 +147,18 @@ class Beat:
         self.timeframe = timeframe
         self.x = self.line.pos[0] + int(self.step * (self.time - self.line.time))
         self.y = self.line.pos[1]
+        self.active = True
 
     def is_active(self):
         """
         checks whether the beat is active by comparing the time difference between it and the BeatLine to the timeframe
         :return: bool
         """
-        return abs(self.time - self.line.time) < self.timeframe / 2
+        return self.active and abs(self.time - self.line.time) < self.timeframe / 2
+
+    def deactivate(self):
+        """prevents the beat from being active in the future"""
+        self.active = False
 
     def update(self):
         """
