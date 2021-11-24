@@ -4,6 +4,8 @@ import pygame
 
 from locals import *
 from button import Button
+import model
+import MusLine
 
 class GameState(ABC):
     """ Abstract class responsible for controlling all game elements:
@@ -96,9 +98,8 @@ class MainMenu(GameState):
 class GameOver(GameState):
     """ Represents the game over screen """
 
-    def __init__(self):
-        """ Initializes menu with buttons """
-        # TODO: add score argument
+    def __init__(self, score=0):
+        """ Initializes menu with buttons and score"""
 
         def return_to_menu():
              self.game.switch_to(MainMenu())
@@ -111,16 +112,19 @@ class GameOver(GameState):
         
         self.font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE)
 
+        self.score = score
     def render(self) -> pygame.Surface:
         """ Renders game over message and menu buttons
         :returns: PyGame surface with the result
         """
-        # TODO: Render score
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 
+        score_surface = self.font.render(TEXT_SCORE + str(self.score), True, Color.WHITE)
+        score_rect = score_surface.get_rect(center=(WIDTH/2, 0.2 * HEIGHT))
         text_surface = self.font.render(TEXT_GAME_OVER, True, Color.WHITE)
         text_rect = text_surface.get_rect(center = (WIDTH / 2, 0.1 * HEIGHT))
         screen.blit(text_surface, text_rect)
+        screen.blit(score_surface, score_rect)
 
         for button in self.buttons:
             button.render(screen)
@@ -141,41 +145,42 @@ class GameOver(GameState):
                 button.handle(event)
 
 class GameSession(GameState):
-    """ Represents game engine """
-
     def __init__(self):
-        """ Initializes all game elements: 
-            * Tower 
-            * Player
-            * Bitline
-            * Abilities
-        """
-        # TODO: Initialize
-        # TODO: Create abilities
-        # TODO: self.dynamic_elements = []
-        pass
+        self.score = 0
+
+        self.tower = model.Tower()
+        self.player = model.Player(self.tower)
+        self.beatline = MusLine.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, 'Opening Animal Crossing.mp3.txt', 2000)
+
+        self.abilities = [model.DashJ(self.player), model.DashK(self.player), model.DashL(self.player), model.DashS(self.player)]
+        self.dynamic_elements = [self.tower, self.player, self.beatline] + self.abilities
+
+        pygame.mixer.music.load(path.join('resources', 'music', 'Opening Animal Crossing.mp3'))
+        pygame.mixer.music.play()
+
+    def handle(self, event):
+        """handles user input"""
+        if event.type == pygame.KEYDOWN:
+            if self.beatline.is_active():
+                self.beatline.deactivate()
+                for elem in self.dynamic_elements:
+                    elem.handle(event)
+                self.score +=1
+
 
     def render(self) -> pygame.Surface:
-        """ Renders tower, player, abilities' icons 
-        :returns: PyGame surface with the result
-        """
+        """renders the tower, player model and beatline onto the screen"""
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-        
-        # TODO: render dynamic elements
-
+        for elem in self.dynamic_elements:
+            elem.render(screen)
         return screen
 
-    def update(self) -> None:
-        """ Ends game when player falls off the screen """
-        # TODO: if self.player.is_alive switch state, send score
-        pass
-
-    def handle(self, event: pygame.event.Event) -> None:
-        """ Handles keystrokes
-        :param event: PyGame event to be handled
-        """
-        # TODO: Pass KEYDOWN events to dynamic elements
-        pass
+    def update(self):
+        if not self.player.is_alive():
+            pygame.mixer.music.stop()
+            self.game.switch_to(GameOver(self.score))
+        for elem in self.dynamic_elements:
+            elem.update()
 
 
 def main():
