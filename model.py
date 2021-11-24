@@ -62,7 +62,7 @@ class Tower:
     def is_empty(self, pos: tuple[int, int]) -> bool:
         """ :returns: True if player can stay in the cell """
         x, y = pos
-        return self.is_inside(pos) and self.cells[y % len(self.cells[0])][x] is Cell.EMPTY;
+        return self.is_inside(pos) and self.cells[y % len(self.cells[0])][x] is Cell.EMPTY
 
     def update(self) -> None:
         """ For now tower has no animation or progression """
@@ -101,7 +101,7 @@ class Player:
         self.x, self.y = Tower.WIDTH // 2, 3
         self.tower = tower
 
-    def move(self, dx, dy) -> bool:
+    def move(self, dx, dy) -> None:
         """ Moves player if possible """
         new_x, new_y = self.x + dx, self.y + dy
         if self.tower.is_empty((new_x, new_y)):
@@ -175,26 +175,6 @@ class Ability(ABC):
         """ Executes the ability """
         pass
 
-
-class DashJ(Ability):
-    """ Represents left-top dash activated by J key """
-
-    def __init__(self, player: Player):
-        """ Initilizes CD timer, binds ability with the player """
-        super().__init__(player)
-        self.KEY = pygame.K_j
-
-    def execute(self) -> None:
-        """ Teleports to the left and top """
-        self.player.move(-2, 1)
-
-    def render(self, screen: pygame.Surface) -> None:
-        """
-        :param screen: pygame surface to blit image on """
-        font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE - 20)
-        text_surface = font.render(f"DashJ CD: {self.cd_left}", True, Color.WHITE)
-        text_rect = text_surface.get_rect(topleft = (WIDTH * 0.01, 0.1 * HEIGHT))
-        screen.blit(text_surface, text_rect)
 
 class DashJ(Ability):
     """ Represents left-top dash activated by J key """
