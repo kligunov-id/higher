@@ -145,7 +145,10 @@ class GameOver(GameState):
                 button.handle(event)
 
 class GameSession(GameState):
+    """represents the gameplay screen"""
+
     def __init__(self):
+        """initialises playing field, player model, abilities, and beatline. Also starts music"""
         self.score = 0
 
         self.tower = model.Tower()
@@ -159,7 +162,7 @@ class GameSession(GameState):
         pygame.mixer.music.play()
 
     def handle(self, event):
-        """handles user input"""
+        """handles user input, checks whether any beats are active"""
         if event.type == pygame.KEYDOWN:
             if self.beatline.is_active():
                 self.beatline.deactivate()
@@ -176,6 +179,7 @@ class GameSession(GameState):
         return screen
 
     def update(self):
+        """switches to the game over screen if the player is dead"""
         if not self.player.is_alive():
             pygame.mixer.music.stop()
             self.game.switch_to(GameOver(self.score))
