@@ -158,7 +158,7 @@ class GameSession(GameState):
         self.abilities = [model.DashJ(self.player), model.DashK(self.player), model.DashL(self.player), model.DashS(self.player)]
         self.dynamic_elements = [self.tower, self.player, self.beatline] + self.abilities
 
-        pygame.mixer.music.load(path.join('resources', 'music', 'Opening Animal Crossing.mp3'))
+        pygame.mixer.music.load(path.join('resources', 'music', 'Opening-Animal-Crossing.ogg'))
         pygame.mixer.music.play()
 
     def handle(self, event):
