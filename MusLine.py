@@ -113,7 +113,7 @@ class DrawableLine(Line):
         :param timeloop: the amount of frames the beats will be visible on the line
         """
         super().__init__(pos, width, filename, timeloop)
-        self.initiate_images((width, int(width / 26)))
+        self.initiate_images((int(width), int(width / 26)))
         self.rect = self.image.get_rect()
         self.pointer_rect = self.pointer_image.get_rect()
 
@@ -183,7 +183,7 @@ class DrawableBeat(Beat):
         self.active_image.set_colorkey((255, 255, 255))
 
         self.background_image = pygame.image.load(os.path.join('resources', 'images', 'BeatActiveBackground.png'))
-        self.background_image = pygame.transform.scale(self.background_image, (self.step * self.timeframe, size[1]))
+        self.background_image = pygame.transform.scale(self.background_image, (int(self.step * self.timeframe), size[1]))
         self.background_image.set_colorkey((255, 255, 255))
 
     def __init__(self, line, time, timeframe, size=(10, 40)):
