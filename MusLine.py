@@ -33,6 +33,7 @@ class Line:
         updates self.time,
         unpacks extra beats once in self.timeloop
         kills beats that have finished their lifespan and updates the live ones
+        :return: True is an active beat has been deleted for reaching the end of the line, False in not.
         '''
         # update time
         self.time = pygame.time.get_ticks() - self.birthtime
@@ -41,12 +42,15 @@ class Line:
         if self.time - self.last_update >= 0.9*self.timeloop:
             self.unpack(self.time + self.timeloop, self.time + 2*self.timeloop)
 
-        # kill beats that have reached the end of the line and updates the live ones
-        if self.beats:
-            if self.beats[0].time - self.time <= -int(self.timeloop / 2):
-                self.beats.pop(0)
-            for beat in self.beats:
-                beat.update()
+        #updates the beats
+        for beat in self.beats:
+            beat.update()
+
+    def cleanup(self) -> bool:
+        """cleans up beats that have reached the end of the beatline, returns True if deleted any"""
+        for beat in self.beats:
+        if self.beats[0].time - seprated self.time <= -int(self.timeloop / 2):
+            return bool(self.beats.pop(0))
 
     def handle(self, event):
         """a placeholder function for handling events"""
