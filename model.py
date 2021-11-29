@@ -34,13 +34,16 @@ class Cell(Enum):
     """ Describes all possible cell types """
 
     WALL = auto()
+    SPIKE = auto()
+    HOLE = auto()
+    TREASURE = auto()
     EMPTY = auto()
 
 class Tower:
     """ Stores all cells, manipulates and renders them """
 
-    WIDTH = 7
-    HEIGHT = 7
+    WIDTH = 13
+    HEIGHT = 15
 
     def __init__(self):
         """ Initializes tower with data from field.txt file """
@@ -175,7 +178,6 @@ class Ability(ABC):
         """ Executes the ability """
         pass
 
-
 class DashJ(Ability):
     """ Represents left-top dash activated by J key """
 
@@ -193,7 +195,7 @@ class DashJ(Ability):
         :param screen: pygame surface to blit image on """
         font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE - 20)
         text_surface = font.render(f"DashJ CD: {self.cd_left}", True, Color.WHITE)
-        text_rect = text_surface.get_rect(topleft = (WIDTH * 0.01, 0.1 * HEIGHT))
+        text_rect = text_surface.get_rect(topleft=(WIDTH * 0.01, 0.1 * HEIGHT))
         screen.blit(text_surface, text_rect)
 
 class DashK(Ability):
