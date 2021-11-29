@@ -185,6 +185,8 @@ class GameSession(GameState):
             self.game.switch_to(GameOver(self.score))
         for elem in self.dynamic_elements:
             elem.update()
+        if self.beatline.cleanup():
+            self.tower.move_floor(0.5)
 
 
 def main():

@@ -53,9 +53,12 @@ class Tower:
             for line in dump])
         self.level = 0
 
-    def move_floor(self) -> None:
-        """ Moves tower one block down """
-        self.level += 1
+    def move_floor(self, amount) -> None:
+        """  Moves tower any amount of cells down
+        :param amount: The amoutn of cells to raise the level by
+        :return: None
+        """
+        self.level += amount
 
     def is_inside(self, pos: tuple[int, int]) -> bool:
         """ :returns: True if pos is a valid cell """
