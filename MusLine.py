@@ -49,8 +49,8 @@ class Line:
     def cleanup(self) -> bool:
         """cleans up beats that have reached the end of the beatline, returns True if deleted an Unused beat"""
         for beat in self.beats:
-        if self.beats[0].time - seprated self.time <= -int(self.timeloop / 2):
-            return self.beats.pop(0).active
+            if self.beats[0].time - self.time <= -int(self.timeloop / 2):
+                return self.beats.pop(0).active
 
     def handle(self, event):
         """a placeholder function for handling events"""
