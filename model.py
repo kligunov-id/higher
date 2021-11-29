@@ -77,7 +77,7 @@ class Tower:
     def handle(self, event: pygame.event.Event) -> None:
         """ """
         if event.type == pygame.KEYDOWN:
-            self.move_floor()
+            self.move_floor(1)
 
     @staticmethod
     def calc_center(pos:tuple[int, int]) -> tuple[int, int]:

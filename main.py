@@ -186,7 +186,7 @@ class GameSession(GameState):
         for elem in self.dynamic_elements:
             elem.update()
         if self.beatline.cleanup():
-            self.tower.move_floor(0.5)
+            self.tower.move_floor(1)
 
 
 def main():
