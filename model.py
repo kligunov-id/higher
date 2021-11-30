@@ -11,7 +11,8 @@ Classes:
     
     CellType(Enum)
     Tower
-
+    Player
+    
 Functions:
     
     square(screen, color, center, a) -> None
@@ -143,124 +144,6 @@ class Player:
         return self.y >= self.tower.level
 
 
-class Ability(ABC):
-    """ Renders ability, tracks it CD and executes it """
-    CD = 5
-
-    def __init__(self, player: Player):
-        """ Initilizes CD timer, binds ability with the player """
-        self.player = player
-        self.cd_left = 0
-        self.KEY = None
-
-    def render(self, screen: pygame.Surface) -> None:
-        """
-        :param screen: pygame surface to blit image on """
-        pass
-
-    def update(self) -> None:
-        """ For now abilities have now animation or progression """
-        pass
-    
-    def handle(self, event: pygame.event.Event) -> None:
-        """ Recharges CD and executes ability
-        :param event: Event to be handled, should be of KEYDOWN type """
-        if event.type != pygame.KEYDOWN:
-            return
-        if self.is_active() and event.key == self.KEY:
-            self.execute()
-            self.cd_left = self.CD
-        self.cd_left -= 1
-        self.cd_left = max(self.cd_left, 0)
-
-    def is_active(self) -> bool:
-        """ :returns: True if cd is over """
-        return self.cd_left <= 0
-
-    def execute(self) -> None:
-        """ Executes the ability """
-        pass
-
-class DashJ(Ability):
-    """ Represents left-top dash activated by J key """
-
-    def __init__(self, player: Player):
-        """ Initilizes CD timer, binds ability with the player """
-        super().__init__(player)
-        self.KEY = pygame.K_j
-
-    def execute(self) -> None:
-        """ Teleports to the left and top """
-        self.player.move(-2, 1)
-
-    def render(self, screen: pygame.Surface) -> None:
-        """ Displays current CD
-        :param screen: pygame surface to blit image on """
-        font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE - 20)
-        text_surface = font.render(f"DashJ CD: {self.cd_left}", True, Color.WHITE)
-        text_rect = text_surface.get_rect(topleft=(WIDTH * 0.01, 0.1 * HEIGHT))
-        screen.blit(text_surface, text_rect)
-
-class DashK(Ability):
-    """ Represents top-left dash activated by L key """
-
-    def __init__(self, player: Player):
-        """ Initilizes CD timer, binds ability with the player """
-        super().__init__(player)
-        self.KEY = pygame.K_k
-
-    def execute(self) -> None:
-        """ Teleports to the left and top """
-        self.player.move(-1, 2)
-
-    def render(self, screen: pygame.Surface) -> None:
-        """ Displays current CD
-        :param screen: pygame surface to blit image on """
-        font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE - 20)
-        text_surface = font.render(f"DashK CD: {self.cd_left}", True, Color.WHITE)
-        text_rect = text_surface.get_rect(topleft = (WIDTH * 0.01, 0.2 * HEIGHT))
-        screen.blit(text_surface, text_rect)
-
-class DashL(Ability):
-    """ Represents top-right dash activated by L key """
-
-    def __init__(self, player: Player):
-        """ Initilizes CD timer, binds ability with the player """
-        super().__init__(player)
-        self.KEY = pygame.K_l
-
-    def execute(self) -> None:
-        """ Teleports to the left and top """
-        self.player.move(1, 2)
-
-    def render(self, screen: pygame.Surface) -> None:
-        """ Displays current CD
-        :param screen: pygame surface to blit image on """
-        font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE - 20)
-        text_surface = font.render(f"DashL CD: {self.cd_left}", True, Color.WHITE)
-        text_rect = text_surface.get_rect(topleft = (WIDTH * 0.01, 0.3 * HEIGHT))
-        screen.blit(text_surface, text_rect)
-
-class DashS(Ability):
-    """ Represents left-top dash activated by semicolon """
-
-    def __init__(self, player: Player):
-        """ Initilizes CD timer, binds ability with the player """
-        super().__init__(player)
-        self.KEY = pygame.K_SEMICOLON
-
-    def execute(self) -> None:
-        """ Teleports to the left and top """
-        self.player.move(2, 1)
-
-    def render(self, screen: pygame.Surface) -> None:
-        """ Displays current CD
-        :param screen: pygame surface to blit image on """
-        font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE - 20)
-        text_surface = font.render(f"DashS CD: {self.cd_left}", True, Color.WHITE)
-        text_rect = text_surface.get_rect(topleft = (WIDTH * 0.01, 0.4 * HEIGHT))
-        screen.blit(text_surface, text_rect)
-
 
 if __name__ == '__main__':
     pygame.init()
@@ -270,9 +153,14 @@ if __name__ == '__main__':
 
     tower = Tower()
     player = Player(tower)
-    abilities = [DashJ(player), DashK(player), DashL(player), DashS(player)]
+    abilitybar = AbilityBar(player)
 
-    dynamic_elements = [tower, player] + abilities
+    abilitybar.set_ability(0, KnightLeftUp(player))
+    abilitybar.set_ability(1, KnightUpLeft(player))
+    abilitybar.set_ability(2, KnightUpRight(player))
+    abilitybar.set_ability(3, KnightRightUp(player))
+
+    dynamic_elements = [tower, player, abilitybar]
 
     clock = pygame.time.Clock()
     finished = False
