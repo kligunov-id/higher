@@ -88,12 +88,13 @@ class AbilityBar:
     width = int(height * 0.25)
     x, y = int(width/2), int(height/2)
 
-    def __init__(self, player: Player, pos: tuple[int, int] = None):
+    def __init__(self, spritesheet, player: Player, pos: tuple[int, int] = None):
         """
         initiates AbilityBar with void abilities
         hardcoded to have exactly 4
         """
         self.player = player
+        self.spritesheet = spritesheet
         if pos:
             self.x, self.y = pos
             height = self.y * 2
@@ -143,6 +144,9 @@ class KnightLeftUp(Ability):
     def __init__(self, *args):
         """ Initilizes the ability, without constructing it fully."""
         super().__init__(*args)
+        self.frames = self.spritesheet.load_strip((0, 96, 32, 32), 6, Color.WHITE)
+        for i, frame in enumerate(self.frames):
+            self.frames[i] = weirdscale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """ Teleports to the left and top """
@@ -151,16 +155,16 @@ class KnightLeftUp(Ability):
         self.player.move(0, 1)
 
     def render(self) -> pygame.Surface:
-        """ Displays current CD
-        :return: surface with the ability text rendered on it """
-        font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE - 20)
-        self.text_surface = font.render(f"DashJ CD: {self.cd_left}", True, Color.WHITE)
-        return self.text_surface
+        """:return: surface with the ability image rendered on it """
+        return self.frames[self.cd_left]
 
 class KnightUpLeft(Ability):
     def __init__(self, *args):
         """ Initilizes the ability, without constructing it fully."""
         super().__init__(*args)
+        self.frames = self.spritesheet.load_strip((0, 64, 32, 32), 6, Color.WHITE)
+        for i, frame in enumerate(self.frames):
+            self.frames[i] = weirdscale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     """ Represents top-left dash activated by L key """
 
@@ -173,9 +177,7 @@ class KnightUpLeft(Ability):
     def render(self) -> pygame.Surface:
         """ Displays current CD
         :return: surface with the ability text rendered on it """
-        font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE - 20)
-        self.text_surface = font.render(f"DashK CD: {self.cd_left}", True, Color.WHITE)
-        return self.text_surface
+        return self.frames[self.cd_left]
 
 class KnightUpRight(Ability):
     """ Represents top-right dash activated by L key """
@@ -183,6 +185,9 @@ class KnightUpRight(Ability):
     def __init__(self, *args):
         """ Initilizes the ability, without constructing it fully."""
         super().__init__(*args)
+        self.frames = self.spritesheet.load_strip((0, 32, 32, 32), 6, Color.WHITE)
+        for i, frame in enumerate(self.frames):
+            self.frames[i] = weirdscale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """ Teleports to the left and top """
@@ -192,10 +197,8 @@ class KnightUpRight(Ability):
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
-        text_surface = font.render(f"DashJ CD: {self.cd_left}", True, Color.WHITE) """
-        font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE - 20)
-        self.text_surface = font.render(f"DashL CD: {self.cd_left}", True, Color.WHITE)
-        return self.text_surface
+        :return: surface with the ability image rendered on it """
+        return self.frames[self.cd_left]
 
 class KnightRightUp(Ability):
     """ Represents left-top dash activated by semicolon """
@@ -203,6 +206,9 @@ class KnightRightUp(Ability):
     def __init__(self, *args):
         """ Initilizes the ability, without constructing it fully."""
         super().__init__(*args)
+        self.frames = self.spritesheet.load_strip((0, 0, 32, 32), 6, Color.WHITE)
+        for i, frame in enumerate(self.frames):
+            self.frames[i] = weirdscale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """ Teleports to the left and top """
@@ -212,7 +218,5 @@ class KnightRightUp(Ability):
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
-        text_surface = font.render(f"DashJ CD: {self.cd_left}", True, Color.WHITE) """
-        font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE - 20)
-        self.text_surface = font.render(f"DashS CD: {self.cd_left}", True, Color.WHITE)
-        return self.text_surface
+        :return: surface with the ability image rendered on it """
+        return self.frames[self.cd_left]

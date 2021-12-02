@@ -152,10 +152,12 @@ class GameSession(GameState):
         """initialises playing field, player model, abilities, and beatline. Also starts music"""
         self.score = 0
 
+        self.abilitysheet = SpriteSheet('abilitysheet.png')
+
         self.tower = model.Tower()
         self.player = model.Player(self.tower)
         self.beatline = MusLine.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, 'Opening Animal Crossing.mp3.txt', 2000)
-        self.abilitybar = AbilityBar(self.player)
+        self.abilitybar = AbilityBar(self.abilitysheet, self.player)
 
         self.abilitybar.set_ability(0, KnightLeftUp(self.abilitybar))
         self.abilitybar.set_ability(1, KnightUpLeft(self.abilitybar))
