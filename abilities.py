@@ -1,3 +1,4 @@
+import os.path
 from os import path
 from enum import Enum, auto
 import pygame
@@ -11,7 +12,7 @@ class SpriteSheet:
     def __init__(self, filename):
         """Load the sheet."""
         try:
-            self.sheet = pygame.image.load(filename).convert()
+            self.sheet = pygame.image.load(os.path.join('resources', 'images', filename)).convert()
         except pygame.error as e:
             print(f"Unable to load spritesheet image: {filename}")
             raise SystemExit(e)
@@ -23,7 +24,7 @@ class SpriteSheet:
         image = pygame.Surface(rect.size).convert()
         image.blit(self.sheet, (0, 0), rect)
         if colorkey is not None:
-            if colorkey is -1:
+            if colorkey == -1:
                 colorkey = image.get_at((0,0))
             image.set_colorkey(colorkey, pygame.RLEACCEL)
         return image
@@ -38,14 +39,18 @@ class SpriteSheet:
                 for x in range(image_count)]
         return self.images_at(tups, colorkey)
 
+def weirdscale(surface, size):
+    return pygame.transform.scale(pygame.transform.scale2x(pygame.transform.scale2x(surface)), size)
 
 class Ability(ABC):
     """ Renders ability, tracks it CD and executes it """
 
-    def __init__(self, player: Player, CD: int = 5):
+    def __init__(self, abilitybar, CD: int = 5):
         """ Initilizes CD timer, binds ability with the player """
+        self.abilitybar = abilitybar
         self.cd_left = 0
-        self.player = player
+        self.player = self.abilitybar.player
+        self.spritesheet = self.abilitybar.spritesheet
         self.KEY = None
         self.CD = CD
 
@@ -79,9 +84,9 @@ class Ability(ABC):
 
 class AbilityBar:
     keys = [pygame.K_j, pygame.K_k, pygame.K_l, pygame.K_SEMICOLON]
-    x, y = int(WIDTH * 0.125), int(HEIGHT * 0.25)
-    height = int(HEIGHT * 0.5)
+    height = int(HEIGHT * 0.8)
     width = int(height * 0.25)
+    x, y = int(width/2), int(height/2)
 
     def __init__(self, player: Player, pos: tuple[int, int] = None):
         """
@@ -93,14 +98,14 @@ class AbilityBar:
             self.x, self.y = pos
             height = self.y * 2
             width = int(height / 4)
-        self.abilities = [Ability(player), Ability(player), Ability(player), Ability(player)]
+        self.abilities = [Ability(self), Ability(self), Ability(self), Ability(self)]
 
     def update(self):
         for ability in self.abilities:
             ability.update()
 
     def render(self, screen):
-        surf = pygame.Surface((self.width, self.height))
+        surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         for place, ability in enumerate(self.abilities):
             aimage = ability.render()
             arect = aimage.get_rect(center=self.get_pos(place))
@@ -141,7 +146,9 @@ class KnightLeftUp(Ability):
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move(-2, 1)
+        self.player.move(-1, 0)
+        self.player.move(-1, 0)
+        self.player.move(0, 1)
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
@@ -159,7 +166,9 @@ class KnightUpLeft(Ability):
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move(-1, 2)
+        self.player.move(0, 1)
+        self.player.move(0, 1)
+        self.player.move(-1, 0)
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
@@ -177,7 +186,9 @@ class KnightUpRight(Ability):
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move(1, 2)
+        self.player.move(0, 1)
+        self.player.move(0, 1)
+        self.player.move(1, 0)
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
@@ -195,7 +206,9 @@ class KnightRightUp(Ability):
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move(2, 1)
+        self.player.move(1, 0)
+        self.player.move(1, 0)
+        self.player.move(0, 1)
 
     def render(self) -> pygame.Surface:
         """ Displays current CD

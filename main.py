@@ -157,10 +157,10 @@ class GameSession(GameState):
         self.beatline = MusLine.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, 'Opening Animal Crossing.mp3.txt', 2000)
         self.abilitybar = AbilityBar(self.player)
 
-        self.abilitybar.set_ability(0, KnightLeftUp(self.player))
-        self.abilitybar.set_ability(1, KnightUpLeft(self.player))
-        self.abilitybar.set_ability(2, KnightUpRight(self.player))
-        self.abilitybar.set_ability(3, KnightRightUp(self.player))
+        self.abilitybar.set_ability(0, KnightLeftUp(self.abilitybar))
+        self.abilitybar.set_ability(1, KnightUpLeft(self.abilitybar))
+        self.abilitybar.set_ability(2, KnightUpRight(self.abilitybar))
+        self.abilitybar.set_ability(3, KnightRightUp(self.abilitybar))
 
         self.dynamic_elements = [self.tower, self.player, self.beatline, self.abilitybar]
 
@@ -200,7 +200,6 @@ def main():
     pygame.font.init()
 
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-
 
 
     game = Game()
