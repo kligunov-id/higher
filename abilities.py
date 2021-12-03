@@ -86,7 +86,7 @@ class AbilityBar:
     keys = [pygame.K_j, pygame.K_k, pygame.K_l, pygame.K_SEMICOLON]
     height = int(HEIGHT * 0.8)
     width = int(height * 0.25)
-    x, y = int(width/2), int(height/2)
+    x, y = int(WIDTH/5), int(height/2)
 
     def __init__(self, spritesheet, player: Player, pos: tuple[int, int] = None):
         """
@@ -144,9 +144,9 @@ class KnightLeftUp(Ability):
     def __init__(self, *args):
         """ Initilizes the ability, without constructing it fully."""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((0, 96, 32, 32), 6, Color.WHITE)
+        self.frames = self.spritesheet.load_strip((0, 960, 320, 320), 6, Color.WHITE)
         for i, frame in enumerate(self.frames):
-            self.frames[i] = weirdscale(frame, (self.abilitybar.width, self.abilitybar.width))
+            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """ Teleports to the left and top """
@@ -162,9 +162,9 @@ class KnightUpLeft(Ability):
     def __init__(self, *args):
         """ Initilizes the ability, without constructing it fully."""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((0, 64, 32, 32), 6, Color.WHITE)
+        self.frames = self.spritesheet.load_strip((0, 640, 320, 320), 6, Color.WHITE)
         for i, frame in enumerate(self.frames):
-            self.frames[i] = weirdscale(frame, (self.abilitybar.width, self.abilitybar.width))
+            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     """ Represents top-left dash activated by L key """
 
@@ -185,9 +185,9 @@ class KnightUpRight(Ability):
     def __init__(self, *args):
         """ Initilizes the ability, without constructing it fully."""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((0, 32, 32, 32), 6, Color.WHITE)
+        self.frames = self.spritesheet.load_strip((0, 320, 320, 320), 6, Color.WHITE)
         for i, frame in enumerate(self.frames):
-            self.frames[i] = weirdscale(frame, (self.abilitybar.width, self.abilitybar.width))
+            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """ Teleports to the left and top """
@@ -206,9 +206,9 @@ class KnightRightUp(Ability):
     def __init__(self, *args):
         """ Initilizes the ability, without constructing it fully."""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((0, 0, 32, 32), 6, Color.WHITE)
+        self.frames = self.spritesheet.load_strip((0, 0, 320, 320), 6, Color.WHITE)
         for i, frame in enumerate(self.frames):
-            self.frames[i] = weirdscale(frame, (self.abilitybar.width, self.abilitybar.width))
+            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """ Teleports to the left and top """
