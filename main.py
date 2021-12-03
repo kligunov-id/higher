@@ -156,7 +156,7 @@ class GameSession(GameState):
 
         self.tower = model.Tower()
         self.player = model.Player(self.tower)
-        self.beatline = MusLine.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, 'Opening Animal Crossing.mp3.txt', 2000)
+        self.beatline = MusLine.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, 'Absolute Valentine - In the 42nd Street.txt', 2000)
         self.abilitybar = AbilityBar(self.abilitysheet, self.player)
 
         self.abilitybar.set_ability(0, KnightLeftUp(self.abilitybar))
@@ -166,7 +166,7 @@ class GameSession(GameState):
 
         self.dynamic_elements = [self.tower, self.player, self.beatline, self.abilitybar]
 
-        pygame.mixer.music.load(path.join('resources', 'music', 'Opening-Animal-Crossing.ogg'))
+        pygame.mixer.music.load(path.join('resources', 'music', 'Absolute Valentine - In the 42nd Street.mp3'))
         pygame.mixer.music.play()
 
     def handle(self, event):
