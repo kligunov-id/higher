@@ -49,8 +49,11 @@ class Tower:
     def __init__(self):
         """ Initializes tower with data from field.txt file """
         dump = open(path.join('resources', 'field.txt'), "r").readlines()
-        self.cells = ([
-            [Cell.WALL if cell == "#" else Cell.EMPTY for cell in line]
+        self.cells = ([[
+            Cell.WALL if cell == 'W'
+            else Cell.HOLE if cell == 'H'
+            else Cell.EMPTY
+            for cell in line]
             for line in dump])
         self.level = 0
 
@@ -62,14 +65,19 @@ class Tower:
         self.level += amount
 
     def is_inside(self, pos: tuple[int, int]) -> bool:
-        """ :returns: True if pos is a valid cell """
+        """:return: True if pos is a valid cell """
         x, y = pos
         return 0 <= x and x <= Tower.WIDTH
 
     def is_empty(self, pos: tuple[int, int]) -> bool:
-        """ :returns: True if player can stay in the cell """
+        """:return: True if player can stay in the cell """
         x, y = pos
-        return self.is_inside(pos) and self.cells[y % len(self.cells[0])][x] is Cell.EMPTY
+        return self.is_inside(pos) and self.cells[y][x] is Cell.EMPTY
+
+    def is_walkable(self, pos: tuple[int, int]) -> bool:
+        """:return: True if player can walk on the cell """
+        x, y = pos
+        return self.is_inside(pos) and (self.cells[y][x] is Cell.EMPTY or self.cells[y][x] is Cell.HOLE)
 
     def update(self) -> None:
         """ For now tower has no animation or progression """
@@ -81,7 +89,7 @@ class Tower:
             self.move_floor(1)
 
     @staticmethod
-    def calc_center(pos:tuple[int, int]) -> tuple[int, int]:
+    def calc_center(pos: tuple[int, int]) -> tuple[int, int]:
         """ Calculates on-screen position of an object based on index position in tower
         :param pos: Pair (i, j) of indices in tower
         """
@@ -97,7 +105,9 @@ class Tower:
         a = 0.8 * HEIGHT / Tower.HEIGHT
         for i in range(Tower.HEIGHT):
             for j in range(Tower.WIDTH):
-                color = Color.DEEP_BLUE if self.cells[(i + self.level) % len(self.cells[0])][j] is Cell.WALL else Color.BLACK
+                color = Color.DEEP_BLUE if self.cells[(i + self.level)][j] is Cell.WALL\
+                    else Color.CYAN if self.cells[(i + self.level)][j] is Cell.HOLE\
+                    else Color.BLACK
                 square(screen, color, Tower.calc_center((i, j)), a)
 
 class Player:
@@ -108,12 +118,19 @@ class Player:
         self.x, self.y = Tower.WIDTH // 2, 3
         self.tower = tower
 
-    def move(self, dx, dy) -> None:
+    def move(self, pos, step) -> tuple[int, int]:
         """ Moves player if possible """
-        new_x, new_y = self.x + dx, self.y + dy
-        if self.tower.is_empty((new_x, new_y)):
-            self.x = self.x + dx
-            self.y = self.y + dy
+        new_x, new_y = pos[0] + step[0], pos[1] + step[1]
+        if self.tower.is_walkable((new_x, new_y)):
+            return (new_x, new_y)
+        return pos
+
+    def move_sequence(self, *steps):
+        new_pos = (self.x, self.y)
+        for step in steps:
+            new_pos = self.move(new_pos, step)
+            if self.tower.is_empty(new_pos):
+                self.x, self.y = new_pos
 
     def update(self) -> None:
         """ For now tower has no animation or progression """
@@ -125,13 +142,13 @@ class Player:
         if event.type != pygame.KEYDOWN:
             return
         if event.key == pygame.K_w:
-            self.move(0, 1)
+            self.move_sequence((0, 1))
         elif event.key == pygame.K_s:
-            self.move(0, -1)
+            self.move_sequence((0, -1))
         elif event.key == pygame.K_a:
-            self.move(-1, 0)
+            self.move_sequence((-1, 0))
         elif event.key == pygame.K_d:
-            self.move(1, 0)
+            self.move_sequence((1, 0))
 
     def render(self, screen: pygame.Surface) -> None:
         """

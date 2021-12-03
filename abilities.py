@@ -150,9 +150,7 @@ class KnightLeftUp(Ability):
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move(-1, 0)
-        self.player.move(-1, 0)
-        self.player.move(0, 1)
+        self.player.move_sequence((-1, 0), (-1, 0), (0, 1))
 
     def render(self) -> pygame.Surface:
         """:return: surface with the ability image rendered on it """
@@ -170,9 +168,7 @@ class KnightUpLeft(Ability):
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move(0, 1)
-        self.player.move(0, 1)
-        self.player.move(-1, 0)
+        self.player.move_sequence((0, 1), (0, 1), (-1, 0))
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
@@ -191,9 +187,7 @@ class KnightUpRight(Ability):
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move(0, 1)
-        self.player.move(0, 1)
-        self.player.move(1, 0)
+        self.player.move_sequence((0, 1), (0, 1), (1, 0))
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
@@ -212,9 +206,7 @@ class KnightRightUp(Ability):
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move(1, 0)
-        self.player.move(1, 0)
-        self.player.move(0, 1)
+        self.player.move_sequence((1, 0), (1, 0), (0, 1))
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
