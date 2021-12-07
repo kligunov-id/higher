@@ -3,41 +3,9 @@ from os import path
 from enum import Enum, auto
 import pygame
 from abc import ABC
-
+from spritesheet import *
 from locals import *
 from model import *
-
-class SpriteSheet:
-
-    def __init__(self, filename):
-        """Load the sheet."""
-        try:
-            self.sheet = pygame.image.load(os.path.join('resources', 'images', filename)).convert()
-        except pygame.error as e:
-            print(f"Unable to load spritesheet image: {filename}")
-            raise SystemExit(e)
-
-
-    def image_at(self, rectangle, colorkey = None):
-        """Load a specific image from a specific rectangle."""
-        rect = pygame.Rect(rectangle)
-        image = pygame.Surface(rect.size).convert()
-        image.blit(self.sheet, (0, 0), rect)
-        if colorkey is not None:
-            if colorkey == -1:
-                colorkey = image.get_at((0,0))
-            image.set_colorkey(colorkey, pygame.RLEACCEL)
-        return image
-
-    def images_at(self, rects, colorkey = None):
-        """Load a whole bunch of images and return them as a list."""
-        return [self.image_at(rect, colorkey) for rect in rects]
-
-    def load_strip(self, rect, image_count, colorkey = None):
-        """Load a whole strip of images, and return them as a list."""
-        tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
-                for x in range(image_count)]
-        return self.images_at(tups, colorkey)
 
 def weirdscale(surface, size):
     return pygame.transform.scale(pygame.transform.scale2x(pygame.transform.scale2x(surface)), size)
@@ -141,10 +109,14 @@ class AbilityBar:
 class KnightLeftUp(Ability):
     """ Represents left-top dash activated by J key """
 
+    # coordinates of the upper-left corner of the first frame of animation on the spritesheet
+    cordsx = 0
+    cordsy = 960
+
     def __init__(self, *args):
-        """ Initilizes the ability, without constructing it fully."""
+        """ Initilizes the ability"""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((0, 960, 320, 320), 6, Color.WHITE)
+        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
         for i, frame in enumerate(self.frames):
             self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
@@ -157,10 +129,14 @@ class KnightLeftUp(Ability):
         return self.frames[self.cd_left]
 
 class KnightUpLeft(Ability):
+    # coordinates of the upper-left corner of the first frame of animation on the spritesheet
+    cordsx = 0
+    cordsy = 640
+
     def __init__(self, *args):
-        """ Initilizes the ability, without constructing it fully."""
+        """ Initilizes the ability"""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((0, 640, 320, 320), 6, Color.WHITE)
+        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
         for i, frame in enumerate(self.frames):
             self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
@@ -177,11 +153,14 @@ class KnightUpLeft(Ability):
 
 class KnightUpRight(Ability):
     """ Represents top-right dash activated by L key """
+    # coordinates of the upper-left corner of the first frame of animation on the spritesheet
+    cordsx = 0
+    cordsy = 320
 
     def __init__(self, *args):
-        """ Initilizes the ability, without constructing it fully."""
+        """ Initilizes the ability"""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((0, 320, 320, 320), 6, Color.WHITE)
+        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
         for i, frame in enumerate(self.frames):
             self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
@@ -196,11 +175,14 @@ class KnightUpRight(Ability):
 
 class KnightRightUp(Ability):
     """ Represents left-top dash activated by semicolon """
+    # coordinates of the upper-left corner of the first frame of animation on the spritesheet
+    cordsx = 0
+    cordsy = 0
 
     def __init__(self, *args):
-        """ Initilizes the ability, without constructing it fully."""
+        """ Initilizes the ability"""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((0, 0, 320, 320), 6, Color.WHITE)
+        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
         for i, frame in enumerate(self.frames):
             self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
@@ -212,3 +194,71 @@ class KnightRightUp(Ability):
         """ Displays current CD
         :return: surface with the ability image rendered on it """
         return self.frames[self.cd_left]
+
+class RushUp(Ability):
+    """Represents three-steps-up dash"""
+    #coordinates of the upper-left corner of the first frame of animation on the spritesheet
+    cordsx = 0
+    cordsy = 1280
+
+    def __init__(self, *args):
+        """ Initilizes the ability"""
+        super().__init__(*args)
+        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
+        for i, frame in enumerate(self.frames):
+            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
+
+    def execute(self) -> None:
+        """"""
+        self.player.move_sequence((0, 1), (0, 1), (0, 1))
+
+    def render(self) -> pygame.Surface:
+        """ Displays current CD
+        :return: surface with the ability image rendered on it """
+        return self.frames[self.cd_left]
+
+class Hop(Ability):
+    """Represents a hop, effectively teleporting the player two tiles up"""
+    # coordinates of the upper-left corner of the first frame of animation on the spritesheet
+    cordsx = 0
+    cordsy = 1600
+
+    def __init__(self, *args):
+        """ Initilizes the ability"""
+        super().__init__(*args)
+        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
+        for i, frame in enumerate(self.frames):
+            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
+
+    def execute(self) -> None:
+        """"""
+        self.player.move_sequence((0, 2))
+
+    def render(self) -> pygame.Surface:
+        """ Displays current CD
+        :return: surface with the ability image rendered on it """
+        return self.frames[self.cd_left]
+
+class Mirror(Ability):
+    """Mirrors the player's X position"""
+    # coordinates of the upper-left corner of the first frame of animation on the spritesheet
+    cordsx = 0
+    cordsy = 1600
+
+    def __init__(self, *args):
+        """ Initilizes the ability"""
+        super().__init__(*args)
+        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
+        for i, frame in enumerate(self.frames):
+            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
+
+    def execute(self) -> None:
+        """executes the ability effect"""
+        newx = self.player.tower.WIDTH - self.player.x - 1
+        self.player.move_sequence((newx-self.player.x, 0))
+
+    def render(self) -> pygame.Surface:
+        """ Displays current CD
+        :return: surface with the ability image rendered on it """
+        return self.frames[self.cd_left]
+

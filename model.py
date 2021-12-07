@@ -2,6 +2,7 @@ from os import path
 from enum import Enum, auto
 from locals import *
 import pygame
+from math import ceil
 from abc import ABC
 
 """
@@ -103,12 +104,13 @@ class Tower:
         """ Renders all tower cells 
         :param screen: pygame surface to blit image on """
         a = 0.8 * HEIGHT / Tower.HEIGHT
+        level = ceil(self.level)
         for i in range(Tower.HEIGHT):
             for j in range(Tower.WIDTH):
-                color = Color.DEEP_BLUE if self.cells[(i + self.level)][j] is Cell.WALL\
-                    else Color.CYAN if self.cells[(i + self.level)][j] is Cell.HOLE\
+                color = Color.DEEP_BLUE if self.cells[(i + level)][j] is Cell.WALL\
+                    else Color.CYAN if self.cells[(i + level)][j] is Cell.HOLE\
                     else Color.BLACK
-                square(screen, color, Tower.calc_center((i, j)), a)
+                square(screen, color, Tower.calc_center((i+self.level % 1, j)), a)
 
 class Player:
     """ Responsible for player moving, rendering """
@@ -126,6 +128,7 @@ class Player:
         return pos
 
     def move_sequence(self, *steps):
+
         new_pos = (self.x, self.y)
         for step in steps:
             new_pos = self.move(new_pos, step)
@@ -161,43 +164,5 @@ class Player:
         return self.y >= self.tower.level
 
 
-
 if __name__ == '__main__':
-    pygame.init()
-    pygame.font.init()
-
-    screen = pygame.display.set_mode((WIDTH, HEIGHT))
-
-    tower = Tower()
-    player = Player(tower)
-    abilitybar = AbilityBar(player)
-
-    abilitybar.set_ability(0, KnightLeftUp(player))
-    abilitybar.set_ability(1, KnightUpLeft(player))
-    abilitybar.set_ability(2, KnightUpRight(player))
-    abilitybar.set_ability(3, KnightRightUp(player))
-
-    dynamic_elements = [tower, player, abilitybar]
-
-    clock = pygame.time.Clock()
-    finished = False
-
-    # Main cycle
-    while not finished:
-        clock.tick(60)
-        # Handles events
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                finished = True
-            else:
-                for element in dynamic_elements:
-                    element.handle(event)
-
-        for element in dynamic_elements:
-            element.update()
-            element.render(screen)
-
-        # Updates screen
-        pygame.display.update()
-        screen.fill(Color.BLACK)
-    pygame.quit()
+    print("wherefore has't thee did summon me m'rtal, art thee not acknown yond i'm not the main module?")
