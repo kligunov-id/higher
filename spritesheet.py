@@ -1,10 +1,12 @@
+import pygame
+from os import path
 
 class SpriteSheet:
 
     def __init__(self, filename):
         """Load the sheet."""
         try:
-            self.sheet = pygame.image.load(os.path.join('resources', 'images', filename)).convert()
+            self.sheet = pygame.image.load(path.join('resources', 'images', filename)).convert()
         except pygame.error as e:
             print(f"Unable to load spritesheet image: {filename}")
             raise SystemExit(e)

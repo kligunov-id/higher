@@ -155,16 +155,15 @@ class GameSession(GameState):
         self.abilitysheet = SpriteSheet('abilitysheet.png')
 
         self.tower = model.Tower()
-        self.player = model.Player(self.tower)
         self.beatline = MusLine.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, 'Absolute Valentine - In the 42nd Street.txt', 2000)
-        self.abilitybar = AbilityBar(self.abilitysheet, self.player)
+        self.abilitybar = AbilityBar(self.abilitysheet, self.tower.player)
 
         self.abilitybar.set_ability(0, KnightLeftUp(self.abilitybar))
         self.abilitybar.set_ability(1, KnightUpLeft(self.abilitybar))
         self.abilitybar.set_ability(2, KnightUpRight(self.abilitybar))
         self.abilitybar.set_ability(3, KnightRightUp(self.abilitybar))
 
-        self.dynamic_elements = [self.tower, self.player, self.beatline, self.abilitybar]
+        self.dynamic_elements = [self.beatline, self.abilitybar, self.tower]
 
         pygame.mixer.music.load(path.join('resources', 'music', 'Absolute Valentine - In the 42nd Street.mp3'))
         pygame.mixer.music.play()
@@ -188,7 +187,7 @@ class GameSession(GameState):
 
     def update(self):
         """switches to the game over screen if the player is dead"""
-        if not self.player.is_alive():
+        if not self.tower.player.is_alive():
             pygame.mixer.music.stop()
             self.game.switch_to(GameOver(self.score))
         for elem in self.dynamic_elements:
