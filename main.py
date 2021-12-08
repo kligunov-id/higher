@@ -155,16 +155,15 @@ class GameSession(GameState):
         self.abilitysheet = SpriteSheet('abilitysheet.png')
 
         self.tower = model.Tower()
-        self.player = model.Player(self.tower)
         self.beatline = MusLine.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, 'Absolute Valentine - In the 42nd Street.txt', 2000)
-        self.abilitybar = AbilityBar(self.abilitysheet, self.player)
+        self.abilitybar = AbilityBar(self.abilitysheet, self.tower.player)
 
         self.abilitybar.set_ability(0, KnightLeftUp(self.abilitybar))
         self.abilitybar.set_ability(1, KnightUpLeft(self.abilitybar))
         self.abilitybar.set_ability(2, KnightUpRight(self.abilitybar))
         self.abilitybar.set_ability(3, KnightRightUp(self.abilitybar))
 
-        self.dynamic_elements = [self.tower, self.player, self.beatline, self.abilitybar]
+        self.dynamic_elements = [self.beatline, self.abilitybar, self.tower]
 
         pygame.mixer.music.load(path.join('resources', 'music', 'Absolute Valentine - In the 42nd Street.mp3'))
         pygame.mixer.music.play()
@@ -188,13 +187,45 @@ class GameSession(GameState):
 
     def update(self):
         """switches to the game over screen if the player is dead"""
-        if not self.player.is_alive():
+        if not self.tower.player.is_alive():
             pygame.mixer.music.stop()
             self.game.switch_to(GameOver(self.score))
         for elem in self.dynamic_elements:
             elem.update()
         if self.beatline.cleanup():
             self.tower.move_floor(1)
+
+
+#Work In Progress
+'''
+class AbilityChoice(GameState):
+    """represents the screen where the player can choose abilities for the run"""
+    def __init__(self):
+        """initialises the bar for player abilities, and the field for the player to pick abilities"""
+        def to_play():
+            gamesession = GameSession()
+            gamesession.abilitybar.switch_to(self.abilityholder.ab1)
+            gamesession.abilitybar.switch_to(self.abilityholder.ab2)
+            gamesession.abilitybar.switch_to(self.abilityholder.ab3)
+            gamesession.abilitybar.switch_to(self.abilityholder.ab4)
+            self.game.switch_to(gamesession)
+        def to_menu():
+            self.game.switch_to(Menu())
+        button_play = Button()
+
+    def handle(self, event):
+        """handles user input, replaces abilities"""
+
+
+    def render(self) -> pygame.Surface:
+        """renders the screen"""
+
+
+    def update(self):
+        """switches to the gamesession screen when the ability choice is over"""
+'''
+
+
 
 
 def main():
