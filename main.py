@@ -165,8 +165,11 @@ class GameSession(GameState):
 
         self.dynamic_elements = [self.beatline, self.abilitybar, self.tower]
 
-        pygame.mixer.music.load(path.join('resources', 'music', 'Absolute Valentine - In the 42nd Street.mp3'))
-        pygame.mixer.music.play()
+        try:
+            pygame.mixer.music.load(path.join('resources', 'music', 'Absolute Valentine - In the 42nd Street.mp3'))
+            pygame.mixer.music.play()
+        except:
+            print("!!! Failed to play music !!!")
 
     def handle(self, event):
         """handles user input, checks whether any beats are active"""
