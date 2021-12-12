@@ -70,7 +70,7 @@ class Tower:
         dump = open(path.join('resources', 'chunks', chunk_name + '_refactored.txt'), 'r').readlines()
         dump.reverse()
         newcells = []
-        a = 0.8 * HEIGHT / Tower.HEIGHT
+        a = int(0.8 * HEIGHT / Tower.HEIGHT)
         for n, line in enumerate(dump):
             newcells.append([])
             for sym in line.strip():
