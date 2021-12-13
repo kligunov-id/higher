@@ -1,11 +1,6 @@
 import random
-from os import path
-from enum import Enum, auto
 from locals import *
 from chunks import *
-import pygame
-from math import ceil
-from abc import ABC
 from spritesheet import *
 
 """
@@ -57,8 +52,10 @@ class Cell:
 
     def is_empty(self):
         return self.celltype == 'N'
+
     def is_walkable(self):
         return self.celltype == 'N' or self.celltype == 'H'
+
 
 class Tower:
     """ Stores all cells, manipulates and renders them """
@@ -81,10 +78,11 @@ class Tower:
         """
         self.level += amount
 
-    def get_chunk_name(self, level: int):
+    @staticmethod
+    def get_chunk_name(level: int):
         """
         generates a name for a chunk to be generated from the level the tower is on
-        the name is built by combining the difficulty and a random id for the chunk
+        the name is built by combining the difficulty and a random number for the chunk
         :param level: the level of the tower (to get the appropriate difficulty from)
         """
         if level <= 20:
@@ -93,8 +91,8 @@ class Tower:
             difficulty = 1
         else:
             difficulty = 2
-        ID = random.randint(1, 10)
-        return str(difficulty) + "_" + str(ID) + ".txt"
+        number = random.randint(1, 10)
+        return str(difficulty) + "_" + str(number) + ".txt"
 
     def load_chunk(self, level, chunk_name='') -> None:
         """loads chunk from a prepared(see chunks.py) file
@@ -114,13 +112,14 @@ class Tower:
         self.cells = self.cells + newcells
         self.loaded_level += len(dump)
 
-    def is_inside(self, pos: tuple[int, int]) -> bool:
+    @staticmethod
+    def is_inside(pos: tuple[int, int]) -> bool:
         """
         :param pos: (x, y) of a cell
         :returns: True if pos is a valid cell
         """
         x, y = pos
-        return 0 <= x and x <= Tower.WIDTH
+        return 0 <= x <= Tower.WIDTH
 
     def is_empty(self, pos: tuple[int, int]) -> bool:
         """
@@ -160,7 +159,7 @@ class Tower:
         a = 0.8 * HEIGHT / Tower.HEIGHT
         x = WIDTH / 2 + (j - Tower.WIDTH / 2 + 1 / 2) * a
         y = (Tower.HEIGHT - 1 - i) * a
-        return (x, y)
+        return x, y
 
     def render(self, screen: pygame.Surface) -> None:
         """
@@ -196,7 +195,7 @@ class Player:
         """
         new_x, new_y = pos[0] + step[0], pos[1] + step[1]
         if self.tower.is_walkable((new_x, new_y)):
-            return (new_x, new_y)
+            return new_x, new_y
         return pos
 
     def move_sequence(self, *steps) -> None:
@@ -245,4 +244,5 @@ class Player:
 
 
 if __name__ == '__main__':
-    print("wherefore has't thee did summon me m'rtal, art thee not acknown yond i'm not the main module?")
+    print("this module is for describing the functions and classes of the game 'Higher', it's not supposed to be "
+          "launched directly. To learn more about the game, visit https://github.com/kligunov-id/higher")

@@ -1,11 +1,5 @@
-import os.path
-from os import path
-from enum import Enum, auto
-import pygame
-from abc import ABC
-from spritesheet import *
-from locals import *
 from model import *
+from abc import ABC
 
 
 def weirdscale(surface, size):
@@ -273,3 +267,8 @@ class Mirror(Ability):
         """ Displays current CD
         :return: surface with the ability image rendered on it """
         return self.frames[self.cd_left]
+
+
+if __name__ == '__main__':
+    print("this module is for describing the abilities of the game 'Higher', it's not supposed to be "
+          "launched directly. To learn more about the game, visit https://github.com/kligunov-id/higher")

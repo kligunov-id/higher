@@ -90,6 +90,8 @@ class Line:
 
 class DrawableLine(Line):
     """a class that adds visual rendering to the line class"""
+    image: pygame.Surface
+    pointer_image: pygame.Surface
 
     def initiate_images(self, size: tuple[int, int], pointer_size: tuple[int, int] = (6, 40)):
         """
@@ -170,6 +172,9 @@ class Beat:
 
 
 class DrawableBeat(Beat):
+    image: pygame.Surface
+    active_image: pygame.Surface
+    background_image: pygame.Surface
 
     def initiate_images(self, size: tuple[int, int] = (10, 40)):
         """

@@ -1,12 +1,9 @@
 from abc import ABC, abstractmethod
-from os import path
-import pygame
-
-from locals import *
 from button import Button
 import model
 import MusLine
 from abilities import *
+
 
 class GameState(ABC):
     """ Abstract class responsible for controlling all game elements:
@@ -36,8 +33,11 @@ class GameState(ABC):
         """ Calculates new model and animation states """
         pass
 
+
 class Game:
     """ Wrapper class which resposibility is to allow state switching """
+    state: GameState
+
     def __init__(self):
         """ Initializes the only memeber """
         self.switch_to(MainMenu())
@@ -54,13 +54,16 @@ class Game:
         self.handle = self.state.handle
         self.update = self.state.update
 
+
 class MainMenu(GameState):
     """ Represents the starting menu """
     
     def __init__(self):
         """ Initializes menu with buttons """
+        super().__init__()
+
         def start_game():
-             self.game.switch_to(GameSession())
+            self.game.switch_to(GameSession())
 
         self.start_button = Button(TEXT_START, (WIDTH / 2, 0.4 * HEIGHT), action=start_game)
         self.quit_button = Button(TEXT_QUIT, (WIDTH / 2, 0.6 * HEIGHT), action=exit)
@@ -75,7 +78,7 @@ class MainMenu(GameState):
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 
         text_surface = self.font.render(TITLE, True, Color.WHITE)
-        text_rect = text_surface.get_rect(center = (WIDTH / 2, 0.1 * HEIGHT))
+        text_rect = text_surface.get_rect(center=(WIDTH / 2, 0.1 * HEIGHT))
         screen.blit(text_surface, text_rect)
 
         for button in self.buttons:
@@ -96,14 +99,17 @@ class MainMenu(GameState):
             for button in self.buttons:
                 button.handle(event)
 
+
 class GameOver(GameState):
     """ Represents the game over screen """
 
     def __init__(self, score=0):
         """ Initializes menu with buttons and score"""
+        super().__init__()
 
         def return_to_menu():
-             self.game.switch_to(MainMenu())
+            self.game.switch_to(MainMenu())
+
         def restart_game():
             self.game.switch_to(GameSession())
 
@@ -114,6 +120,7 @@ class GameOver(GameState):
         self.font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE)
 
         self.score = score
+
     def render(self) -> pygame.Surface:
         """ Renders game over message and menu buttons
         :returns: PyGame surface with the result
@@ -123,7 +130,7 @@ class GameOver(GameState):
         score_surface = self.font.render(TEXT_SCORE + str(self.score), True, Color.WHITE)
         score_rect = score_surface.get_rect(center=(WIDTH/2, 0.2 * HEIGHT))
         text_surface = self.font.render(TEXT_GAME_OVER, True, Color.WHITE)
-        text_rect = text_surface.get_rect(center = (WIDTH / 2, 0.1 * HEIGHT))
+        text_rect = text_surface.get_rect(center=(WIDTH / 2, 0.1 * HEIGHT))
         screen.blit(text_surface, text_rect)
         screen.blit(score_surface, score_rect)
 
@@ -145,11 +152,14 @@ class GameOver(GameState):
             for button in self.buttons:
                 button.handle(event)
 
+
 class GameSession(GameState):
     """represents the gameplay screen"""
 
     def __init__(self):
         """initialises playing field, player model, abilities, and beatline. Also starts music"""
+        super().__init__()
+
         self.score = 0
 
         self.abilitysheet = SpriteSheet('abilitysheet.png')
@@ -168,8 +178,8 @@ class GameSession(GameState):
         try:
             pygame.mixer.music.load(path.join('resources', 'music', 'Absolute Valentine - In the 42nd Street.mp3'))
             pygame.mixer.music.play()
-        except:
-            print("!!! Failed to play music !!!")
+        except pygame.error:
+            print("Failed to play Music, make sure that the game files are intact")
 
     def handle(self, event):
         """handles user input, checks whether any beats are active"""
@@ -178,8 +188,7 @@ class GameSession(GameState):
                 self.beatline.deactivate()
                 for elem in self.dynamic_elements:
                     elem.handle(event)
-                self.score +=1
-
+                self.score += 1
 
     def render(self) -> pygame.Surface:
         """renders the tower, player model and beatline onto the screen"""
@@ -199,44 +208,11 @@ class GameSession(GameState):
             self.tower.move_floor(1)
 
 
-#Work In Progress
-'''
-class AbilityChoice(GameState):
-    """represents the screen where the player can choose abilities for the run"""
-    def __init__(self):
-        """initialises the bar for player abilities, and the field for the player to pick abilities"""
-        def to_play():
-            gamesession = GameSession()
-            gamesession.abilitybar.switch_to(self.abilityholder.ab1)
-            gamesession.abilitybar.switch_to(self.abilityholder.ab2)
-            gamesession.abilitybar.switch_to(self.abilityholder.ab3)
-            gamesession.abilitybar.switch_to(self.abilityholder.ab4)
-            self.game.switch_to(gamesession)
-        def to_menu():
-            self.game.switch_to(Menu())
-        button_play = Button()
-
-    def handle(self, event):
-        """handles user input, replaces abilities"""
-
-
-    def render(self) -> pygame.Surface:
-        """renders the screen"""
-
-
-    def update(self):
-        """switches to the gamesession screen when the ability choice is over"""
-'''
-
-
-
-
 def main():
     pygame.init()
     pygame.font.init()
 
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-
 
     game = Game()
     clock = pygame.time.Clock()
@@ -261,6 +237,7 @@ def main():
         pygame.display.update()
         screen.fill(Color.BLACK)
     pygame.quit()
+
 
 if __name__ == '__main__':
     main()

@@ -71,33 +71,33 @@ slovar2 = {
 }
 
 
-def redo_chunk(chunk_name):
+def redo_chunk(filename):
     """transforms a file that's denoted by . as an empty tile, H as a hole and # as a wall \
     into a file that's readable by the load_chunk function
-    :param chunk_name: name of the file, including the .txt OR 'all' to redo all files in \\resources\\chunks directory
+    :param filename: name of the file, including the .txt OR 'all' to redo all files in \\resources\\chunks directory
     """
-    with open(path.join('resources', 'chunks', chunk_name + '_refactored.txt'), 'w') as f:
-        dump = open(path.join('resources', 'chunks', chunk_name), 'r').readlines()
+    with open(path.join('resources', 'chunks', filename + '_refactored.txt'), 'w') as f:
+        dump = open(path.join('resources', 'chunks', filename), 'r').readlines()
         for y, line in enumerate(dump):
             for x, sym in enumerate(line.strip()):
                 if sym == '.':
-                    id = -1
-                    if dump[y][x - 1] != '.': id -= 1
-                    if dump[y][x + 1] != '.': id -= 2
+                    state = -1
+                    if dump[y][x - 1] != '.': state -= 1
+                    if dump[y][x + 1] != '.': state -= 2
                 elif sym == 'H':
-                    id = -10
+                    state = -10
                 elif sym == '#':
-                    id = 1
-                    if y != 0 and dump[y - 1][x] == '#': id += 1
-                    if x != len(line) - 1 and dump[y][x + 1] == '#': id += 2
-                    if y != len(dump) - 1 and dump[y + 1][x] == '#': id += 4
-                    if y != len(dump) - 1 and dump[y + 1][x - 1] == '#': id += 8
-                    if x != 0 and dump[y][x - 1] == '#': id += 16
+                    state = 1  # a variable for encoding the state of various neighbours of the cell
+                    if y != 0 and dump[y - 1][x] == '#': state += 1
+                    if x != len(line) - 1 and dump[y][x + 1] == '#': state += 2
+                    if y != len(dump) - 1 and dump[y + 1][x] == '#': state += 4
+                    if y != len(dump) - 1 and dump[y + 1][x - 1] == '#': state += 8
+                    if x != 0 and dump[y][x - 1] == '#': state += 16
                     if y == 0 and (x == 0 or x == len(line) - 1):
-                        id += 1
+                        state += 1
                     if y == len(dump) - 1 and (x == 0 or x == len(line) - 1):
-                        id += 4
-                letter = slovar[id]
+                        state += 4
+                letter = slovar[state]
                 f.write(letter)
             f.write('\n')
 
