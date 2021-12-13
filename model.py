@@ -13,7 +13,7 @@ Responsible for modeling (and temporary for rendering!) of the game field and th
 
 Classes:
     
-    CellType(Enum)
+    Cell
     Tower
     Player
     
@@ -37,15 +37,28 @@ def square(screen: pygame.Surface, color: tuple[int, int, int], center: tuple[in
 
 
 class Cell:
-    """ Describes all possible cells, stores the cell image and it's type """
+    """ Describes all possible cells, stores the cell image and it's type.
+    Designed to be created with the Tower.load_chunk() function"""
 
-    def __init__(self, size, spritesheet, tup):
-        self.celltype = tup[0]
-        self.image = pygame.transform.scale(spritesheet.image_at(tup[1]), size)
+    def __init__(self, size, ctype, image):
+        """
+        initiates the cell.
+        :param size: the dimensions (width, height) of the cell
+        :param ctype: the type of the cell: W for wall, H for hole and N for nothing, or an empty tile
+        :param image: the image of the cell
+        """
+        self.size = size  # is currently unused but may be useful to child classes
+        self.celltype = ctype
+        self.image = pygame.transform.scale(image, size)
 
-    def render(self):
+    def render(self) -> pygame.Surface:
+        """:returns: a pygame surface with the cell image"""
         return self.image
 
+    def is_empty(self):
+        return self.celltype == 'N'
+    def is_walkable(self):
+        return self.celltype == 'N' or self.celltype == 'H'
 
 class Tower:
     """ Stores all cells, manipulates and renders them """
@@ -97,7 +110,7 @@ class Tower:
         for n, line in enumerate(dump):
             newcells.append([])
             for sym in line.strip():
-                newcells[n].append(Cell((a, a), self.spritesheet, slovar2[sym]))
+                newcells[n].append(Cell((a, a), slovar2[sym][0], self.spritesheet.image_at(slovar2[sym][1])))
         self.cells = self.cells + newcells
         self.loaded_level += len(dump)
 
@@ -115,7 +128,7 @@ class Tower:
         :returns: True if player can stay in the cell
         """
         x, y = pos
-        return self.is_inside(pos) and self.cells[y][x].celltype == 'N'
+        return self.is_inside(pos) and self.cells[y][x].is_empty()
 
     def is_walkable(self, pos: tuple[int, int]) -> bool:
         """
@@ -123,7 +136,7 @@ class Tower:
         :returns: True if player can walk on the cell(if the cell is empty, or if the cell is a hole)
         """
         x, y = pos
-        return self.is_inside(pos) and self.cells[y][x].celltype == 'N' or self.cells[y][x].celltype == 'H'
+        return self.is_inside(pos) and self.cells[y][x].is_walkable()
 
     def update(self) -> None:
         """Unpacks new chunks when the loaded amount gets too small"""
