@@ -57,7 +57,7 @@ class Ability(ABC):
 
 
 class AbilityBar:
-    keys = [pygame.K_j, pygame.K_k, pygame.K_l, pygame.K_SEMICOLON]
+    keys = [pygame.K_h, pygame.K_j, pygame.K_k, pygame.K_l]
     height = int(HEIGHT * 0.8)
     width = int(height * 0.25)
     x, y = int(WIDTH / 5), int(height / 2)
