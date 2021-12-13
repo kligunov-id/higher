@@ -38,6 +38,7 @@ def square(screen: pygame.Surface, color: tuple[int, int, int], center: tuple[in
 
 class Cell:
     """ Describes all possible cells, stores the cell image and it's type """
+
     def __init__(self, size, spritesheet, tup):
         self.celltype = tup[0]
         self.image = pygame.transform.scale(spritesheet.image_at(tup[1]), size)
@@ -62,7 +63,7 @@ class Tower:
 
     def move_floor(self, amount=1) -> None:
         """  Moves tower any amount of cells down
-        :param amount: The amoutn of cells to raise the level by
+        :param amount: The amount of cells to raise the level by
         :return: None
         """
         self.level += amount
@@ -101,17 +102,26 @@ class Tower:
         self.loaded_level += len(dump)
 
     def is_inside(self, pos: tuple[int, int]) -> bool:
-        """:return: True if pos is a valid cell """
+        """
+        :param pos: (x, y) of a cell
+        :returns: True if pos is a valid cell
+        """
         x, y = pos
         return 0 <= x and x <= Tower.WIDTH
 
     def is_empty(self, pos: tuple[int, int]) -> bool:
-        """:return: True if player can stay in the cell """
+        """
+        :param pos: (x, y) of a cell
+        :returns: True if player can stay in the cell
+        """
         x, y = pos
         return self.is_inside(pos) and self.cells[y][x].celltype == 'N'
 
     def is_walkable(self, pos: tuple[int, int]) -> bool:
-        """:return: True if player can walk on the cell """
+        """
+        :param pos: (x, y) of a cell
+        :returns: True if player can walk on the cell(if the cell is empty, or if the cell is a hole)
+        """
         x, y = pos
         return self.is_inside(pos) and self.cells[y][x].celltype == 'N' or self.cells[y][x].celltype == 'H'
 
@@ -121,7 +131,9 @@ class Tower:
             self.load_chunk(self.level)
 
     def handle(self, event: pygame.event.Event) -> None:
-        """Handles events, dropping the tower 1 floor every button press"""
+        """Handles events, dropping the tower 1 floor every button press
+        :param event: a pygame.Event to be handled
+        """
         if event.type == pygame.KEYDOWN:
             self.player.handle(event)
             self.move_floor()
@@ -138,33 +150,48 @@ class Tower:
         return (x, y)
 
     def render(self, screen: pygame.Surface) -> None:
-        """ Renders all tower cells 
-        :param screen: pygame surface to blit image on """
+        """
+        Renders cells and the player onto a surface
+        :param screen: pygame surface to blit image on
+        """
         a = int(0.8 * HEIGHT / Tower.HEIGHT)
-        level = int(self.level)#fixme
+        level = int(self.level)
         for i in range(level, level + Tower.HEIGHT):
             for j in range(Tower.WIDTH):
-                pos = (Tower.calc_center((i-level, j))[0]-a/2, Tower.calc_center((i-level, j))[1]-a/2)
+                pos = (Tower.calc_center((i - level, j))[0] - a / 2, Tower.calc_center((i - level, j))[1] - a / 2)
                 screen.blit(self.cells[i][j].render(), pos)
         self.player.render(screen)
 
 
 class Player:
-    """ Responsible for player moving, rendering """
+    """Responsible for player movement, rendering"""
 
     def __init__(self, tower: Tower):
-        """ Initializes starting position """
+        """
+        Initializes starting position
+        :param tower: the Tower object inside which the player is located
+        """
         self.x, self.y = Tower.WIDTH // 2, 3
         self.tower = tower
 
     def move(self, pos, step) -> tuple[int, int]:
-        """ Moves player if possible """
+        """
+        Calculates movement from a given position
+        :param pos: (x,y) of a cell
+        :param step: (dx, dy) of a single movement
+        :return: (x, y) of the cell after the movement
+        """
         new_x, new_y = pos[0] + step[0], pos[1] + step[1]
         if self.tower.is_walkable((new_x, new_y)):
             return (new_x, new_y)
         return pos
 
-    def move_sequence(self, *steps):
+    def move_sequence(self, *steps) -> None:
+        """
+        moves the player a sequence of steps
+        :param steps: a list of (dx, dy) of movements
+        :return: None
+        """
         new_pos = (self.x, self.y)
         for step in steps:
             new_pos = self.move(new_pos, step)
@@ -172,12 +199,14 @@ class Player:
                 self.x, self.y = new_pos
 
     def update(self) -> None:
-        """ For now tower has no animation or progression """
+        """ For now player has no animation or progression """
         pass
 
     def handle(self, event: pygame.event.Event) -> None:
-        """ Handles WASD movement
-        :param event: Event to be handled, should be of KEYDOWN type """
+        """
+        Handles WASD movement
+        :param event: Event to be handled, should be of KEYDOWN type
+        """
         if event.type != pygame.KEYDOWN:
             return
         if event.key == pygame.K_w:
@@ -190,7 +219,10 @@ class Player:
             self.move_sequence((1, 0))
 
     def render(self, screen: pygame.Surface) -> None:
-        """:param screen: pygame surface to blit image on """
+        """
+        renders self onto a screen
+        :param screen: pygame surface to blit image on
+        """
         a = 0.8 * HEIGHT / Tower.HEIGHT
         square(screen, Color.MAGENTA, Tower.calc_center((self.y - self.tower.level, self.x)), a)
 
