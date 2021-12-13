@@ -1,3 +1,4 @@
+import random
 from os import path
 from enum import Enum, auto
 from locals import *
@@ -55,8 +56,9 @@ class Tower:
         self.spritesheet = SpriteSheet('towersheet.png')
         self.cells = []
         self.player = Player(self)
-        self.load_chunk('field.txt')
-        self.level = 0
+        self.level = 0  # level of the floor of the tower
+        self.loaded_level = 0  # level of the highest loaded cell
+        self.load_chunk(0, '0_0.txt')
 
     def move_floor(self, amount=1) -> None:
         """  Moves tower any amount of cells down
@@ -65,8 +67,28 @@ class Tower:
         """
         self.level += amount
 
-    def load_chunk(self, chunk_name) -> None:
-        """loads chunk from a prepared(see chunks.py) file"""
+    def get_chunk_name(self, level: int):
+        """
+        generates a name for a chunk to be generated from the level the tower is on
+        the name is built by combining the difficulty and a random id for the chunk
+        :param level: the level of the tower (to get the appropriate difficulty from)
+        """
+        if level <= 20:
+            difficulty = 0
+        elif level <= 80:
+            difficulty = 1
+        else:
+            difficulty = 2
+        ID = random.randint(1, 10)
+        return str(difficulty) + "_" + str(ID) + ".txt"
+
+    def load_chunk(self, level, chunk_name='') -> None:
+        """loads chunk from a prepared(see chunks.py) file
+        :param level: level of the tower, passed to get_chunk_name
+        :param chunk_name: optional, use if you want to load a specific chunk by name
+        """
+        if not chunk_name:
+            chunk_name = self.get_chunk_name(level)
         dump = open(path.join('resources', 'chunks', chunk_name + '_refactored.txt'), 'r').readlines()
         dump.reverse()
         newcells = []
@@ -76,6 +98,7 @@ class Tower:
             for sym in line.strip():
                 newcells[n].append(Cell((a, a), self.spritesheet, slovar2[sym]))
         self.cells = self.cells + newcells
+        self.loaded_level += len(dump)
 
     def is_inside(self, pos: tuple[int, int]) -> bool:
         """:return: True if pos is a valid cell """
@@ -93,8 +116,9 @@ class Tower:
         return self.is_inside(pos) and self.cells[y][x].celltype == 'N' or self.cells[y][x].celltype == 'H'
 
     def update(self) -> None:
-        """ For now tower has no animation or progression """
-        pass
+        """Unpacks new chunks when the loaded amount gets too small"""
+        if self.loaded_level <= self.level + 20:
+            self.load_chunk(self.level)
 
     def handle(self, event: pygame.event.Event) -> None:
         """Handles events, dropping the tower 1 floor every button press"""
