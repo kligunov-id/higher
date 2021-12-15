@@ -1,10 +1,10 @@
-import random
+import random, pygame
 from locals import *
-from chunks import *
-from spritesheet import *
+from chunks import slovar2
+from spritesheet import SpriteSheet
 
 """
-Responsible for modeling (and temporary for rendering!) of the game field and the player
+Responsible for modeling and rendering of the game field and the player
 
 Classes:
     
@@ -19,7 +19,7 @@ Functions:
 """
 
 
-def square(screen: pygame.Surface, color: tuple[int, int, int], center: tuple[int, int], a) -> None:
+def square(screen: pygame.Surface, color: tuple[int, int, int], center: tuple[int, int], a: int) -> None:
     """ Blits square and its border with given parameters onto given surface
     :param  screen: PyGame surface to blit square onto
     :param color: Color (R, G, B) of the square
@@ -32,33 +32,33 @@ def square(screen: pygame.Surface, color: tuple[int, int, int], center: tuple[in
 
 
 class Cell:
-    """ Describes all possible cells, stores the cell image and it's type.
+    """ Stores the cell image and the type.
     Designed to be created with the Tower.load_chunk() function"""
 
     def __init__(self, size, ctype, image):
         """
         initiates the cell.
-        :param size: the dimensions (width, height) of the cell
-        :param ctype: the type of the cell: W for wall, H for hole and N for nothing, or an empty tile
+        :param size: Dimensions (width, height) of the cell
+        :param ctype: Cell type: W for wall, H for hole and N for nothing, or an empty tile
         :param image: the image of the cell
         """
-        self.size = size  # is currently unused but may be useful to child classes
+        self.size = size  # Currently unused, but may be usefull in future
         self.celltype = ctype
         self.image = pygame.transform.scale(image, size)
 
     def render(self) -> pygame.Surface:
-        """:returns: a pygame surface with the cell image"""
+        """:return: PyGame surface with the cell image"""
         return self.image
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return self.celltype == 'N'
 
-    def is_walkable(self):
+    def is_walkable(self) -> bool:
         return self.celltype == 'N' or self.celltype == 'H'
 
 
 class Tower:
-    """ Stores all cells, manipulates and renders them """
+    """ Stores and loads from file all cells,  """
     WIDTH = 13
     HEIGHT = 15
 
@@ -69,38 +69,34 @@ class Tower:
         self.player = Player(self)
         self.level = 0  # level of the floor of the tower
         self.loaded_level = 0  # level of the highest loaded cell
-        self.load_chunk(0, '0_0.txt')
+        self.load_chunk('0_0.txt')
 
     def move_floor(self, amount=1) -> None:
-        """  Moves tower any amount of cells down
+        """ Moves tower any amount of cells down
         :param amount: The amount of cells to raise the level by
-        :return: None
         """
         self.level += amount
 
-    @staticmethod
-    def get_chunk_name(level: int):
+    def get_chunk_name(self) -> str:
         """
-        generates a name for a chunk to be generated from the level the tower is on
-        the name is built by combining the difficulty and a random number for the chunk
-        :param level: the level of the tower (to get the appropriate difficulty from)
+        Randomly chooses chunk with difficulty based on tower level
+        :return: Chunk file name
         """
-        if level <= 20:
+        if self.level <= 20:
             difficulty = 0
-        elif level <= 80:
+        elif self.level <= 80:
             difficulty = 1
         else:
             difficulty = 2
         number = random.randint(1, 10)
         return str(difficulty) + "_" + str(number) + ".txt"
 
-    def load_chunk(self, level, chunk_name='') -> None:
-        """loads chunk from a prepared(see chunks.py) file
-        :param level: level of the tower, passed to get_chunk_name
+    def load_chunk(self, chunk_name='') -> None:
+        """ Loads chunk from a prepared(see chunks.py) file
         :param chunk_name: optional, use if you want to load a specific chunk by name
         """
         if not chunk_name:
-            chunk_name = self.get_chunk_name(level)
+            chunk_name = self.get_chunk_name()
         dump = open(path.join('resources', 'chunks', chunk_name + '_refactored.txt'), 'r').readlines()
         dump.reverse()
         newcells = []
@@ -116,7 +112,7 @@ class Tower:
     def is_inside(pos: tuple[int, int]) -> bool:
         """
         :param pos: (x, y) of a cell
-        :returns: True if pos is a valid cell
+        :return: True if pos is a valid cell
         """
         x, y = pos
         return 0 <= x <= Tower.WIDTH
@@ -124,7 +120,7 @@ class Tower:
     def is_empty(self, pos: tuple[int, int]) -> bool:
         """
         :param pos: (x, y) of a cell
-        :returns: True if player can stay in the cell
+        :return: True if player can stay in the cell
         """
         x, y = pos
         return self.is_inside(pos) and self.cells[y][x].is_empty()
@@ -132,7 +128,7 @@ class Tower:
     def is_walkable(self, pos: tuple[int, int]) -> bool:
         """
         :param pos: (x, y) of a cell
-        :returns: True if player can walk on the cell(if the cell is empty, or if the cell is a hole)
+        :return: True if player can walk on the cell(if the cell is empty, or if the cell is a hole)
         """
         x, y = pos
         return self.is_inside(pos) and self.cells[y][x].is_walkable()
@@ -140,7 +136,7 @@ class Tower:
     def update(self) -> None:
         """Unpacks new chunks when the loaded amount gets too small"""
         if self.loaded_level <= self.level + 20:
-            self.load_chunk(self.level)
+            self.load_chunk()
 
     def handle(self, event: pygame.event.Event) -> None:
         """Handles events, dropping the tower 1 floor every button press
@@ -186,7 +182,7 @@ class Player:
         self.x, self.y = Tower.WIDTH // 2, 3
         self.tower = tower
 
-    def move(self, pos, step) -> tuple[int, int]:
+    def move(self, pos: tuple[int, int], step: tuple[int, int]) -> tuple[int, int]:
         """
         Calculates movement from a given position
         :param pos: (x,y) of a cell
@@ -202,7 +198,6 @@ class Player:
         """
         moves the player a sequence of steps
         :param steps: a list of (dx, dy) of movements
-        :return: None
         """
         new_pos = (self.x, self.y)
         for step in steps:
@@ -239,7 +234,7 @@ class Player:
         square(screen, Color.MAGENTA, Tower.calc_center((self.y - self.tower.level, self.x)), a)
 
     def is_alive(self) -> bool:
-        """:returns: True if player is still visible """
+        """:return: True if player is still visible """
         return self.y >= self.tower.level
 
 
