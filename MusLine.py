@@ -1,6 +1,5 @@
 import pygame
 import os.path
-import json
 
 
 class Line:
@@ -23,34 +22,33 @@ class Line:
         self.pos = pos
         self.width = width
 
-        #extracting beats for the first time interval
+        # extracting beats for the first time interval
         self.beats = []
         self.last_update = -100000
-        self.unpack(0, 2*timeloop)
+        self.unpack(0, 2 * timeloop)
 
     def update(self):
-        '''
+        """
         updates self.time,
         unpacks extra beats once in self.timeloop
         kills beats that have finished their lifespan and updates the live ones
         :return: True is an active beat has been deleted for reaching the end of the line, False in not.
-        '''
+        """
         # update time
         self.time = pygame.time.get_ticks() - self.birthtime
 
         # unpack beats for the next loop
-        if self.time - self.last_update >= 0.9*self.timeloop:
-            self.unpack(self.time + self.timeloop, self.time + 2*self.timeloop)
+        if self.time - self.last_update >= 0.9 * self.timeloop:
+            self.unpack(self.time + self.timeloop, self.time + 2 * self.timeloop)
 
-        #updates the beats
+        # updates the beats
         for beat in self.beats:
             beat.update()
 
     def cleanup(self) -> bool:
         """cleans up beats that have reached the end of the beatline, returns True if deleted an Unused beat"""
-        for beat in self.beats:
-            if self.beats[0].time - self.time <= -int(self.timeloop / 2):
-                return self.beats.pop(0).active
+        if self.beats[0].time - self.time <= -int(self.timeloop / 2):
+            return self.beats.pop(0).active
 
     def handle(self, event):
         """a placeholder function for handling events"""
@@ -64,13 +62,13 @@ class Line:
         :return: None, instead appends Beat objects to self.beats
         """
         with open(self.filepath, 'r') as f:
-            V = f.readlines()
-            for T in V:
-                T = int(float(T.strip()) * 1000)
-                if T >= max(start_time, self.last_update + 2000):
-                    if T >= end_time:
+            dump = f.readlines()
+            for time in dump:
+                time = int(float(time.strip()) * 1000)
+                if time >= max(start_time, self.last_update + 2000):
+                    if time >= end_time:
                         break
-                    self.beats.append(DrawableBeat(self, int(T), 200))#todo fix timeframe for beats
+                    self.beats.append(DrawableBeat(self, int(time), 200))
         self.last_update = self.time
 
     def is_active(self):
@@ -92,6 +90,8 @@ class Line:
 
 class DrawableLine(Line):
     """a class that adds visual rendering to the line class"""
+    image: pygame.Surface
+    pointer_image: pygame.Surface
 
     def initiate_images(self, size: tuple[int, int], pointer_size: tuple[int, int] = (6, 40)):
         """
@@ -131,7 +131,7 @@ class DrawableLine(Line):
         self.pointer_rect.center = self.pos
         screen.blit(self.image, self.rect)
         for beat in self.beats:
-            if beat.time <= self.time + self.timeloop/2:
+            if beat.time <= self.time + self.timeloop / 2:
                 beat.render(screen)
         screen.blit(self.pointer_image, self.pointer_rect)
 
@@ -146,12 +146,12 @@ class Beat:
         :param timeframe: the amount of milliseconds this beat will be active for
         """
         self.line = line
-        self.step = line.width / line.timeloop  # a step is the amount of pixels the beat should travel in 1 sec, type float
+        self.step = line.width / line.timeloop  # the amount of pixels the beat should travel in 1 sec, type float
         self.time = time
         self.timeframe = timeframe
         self.x = self.line.pos[0] + int(self.step * (self.time - self.line.time))
         self.y = self.line.pos[1]
-        self.active = True
+        self.active = True  # whether the beat can be used to perform an action (beat.deactivate sets this to false)
 
     def is_active(self):
         """
@@ -172,6 +172,9 @@ class Beat:
 
 
 class DrawableBeat(Beat):
+    image: pygame.Surface
+    active_image: pygame.Surface
+    background_image: pygame.Surface
 
     def initiate_images(self, size: tuple[int, int] = (10, 40)):
         """
@@ -187,7 +190,8 @@ class DrawableBeat(Beat):
         self.active_image.set_colorkey((255, 255, 255))
 
         self.background_image = pygame.image.load(os.path.join('resources', 'images', 'BeatActiveBackground.png'))
-        self.background_image = pygame.transform.scale(self.background_image, (int(self.step * self.timeframe), size[1]))
+        self.background_image = pygame.transform.scale(self.background_image,
+                                                       (int(self.step * self.timeframe), size[1]))
         self.background_image.set_colorkey((255, 255, 255))
 
     def __init__(self, line, time, timeframe, size=(10, 40)):
@@ -230,7 +234,7 @@ if __name__ == '__main__':
                 if event.key == pygame.K_SPACE:
                     if beatline.is_active():
                         print(score)
-                        score +=1
+                        score += 1
 
         beatline.update()
         beatline.render(screen)

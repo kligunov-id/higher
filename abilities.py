@@ -1,26 +1,25 @@
-import os.path
-from os import path
-from enum import Enum, auto
-import pygame
-from abc import ABC
-from spritesheet import *
-from locals import *
 from model import *
+from abc import ABC
+
 
 def weirdscale(surface, size):
     return pygame.transform.scale(pygame.transform.scale2x(pygame.transform.scale2x(surface)), size)
 
+
 class Ability(ABC):
     """ Renders ability, tracks it CD and executes it """
 
-    def __init__(self, abilitybar, CD: int = 5):
-        """ Initilizes CD timer, binds ability with the player """
+    def __init__(self, abilitybar, cd: int = 5):
+        """ Initilizes CD timer, binds ability with the abilitybar
+        :param abilitybar: abilitybar to bind the ability with
+        :param cd: cooldown of the ability
+        """
         self.abilitybar = abilitybar
         self.cd_left = 0
         self.player = self.abilitybar.player
         self.spritesheet = self.abilitybar.spritesheet
         self.KEY = None
-        self.CD = CD
+        self.CD = cd
 
     def render(self) -> pygame.Surface:
         """
@@ -34,7 +33,7 @@ class Ability(ABC):
         pass
 
     def handle(self, event: pygame.event.Event) -> None:
-        """ Recharges CD and executes ability
+        """ Recharges CD and executes ability if ready
         :param event: Event to be handled"""
         if self.is_active() and self.KEY and event.key == self.KEY:
             self.execute()
@@ -50,11 +49,12 @@ class Ability(ABC):
         """ Executes the ability """
         pass
 
+
 class AbilityBar:
-    keys = [pygame.K_j, pygame.K_k, pygame.K_l, pygame.K_SEMICOLON]
+    keys = [pygame.K_h, pygame.K_j, pygame.K_k, pygame.K_l]
     height = int(HEIGHT * 0.8)
     width = int(height * 0.25)
-    x, y = int(WIDTH/5), int(height/2)
+    x, y = int(WIDTH / 5), int(height / 2)
 
     def __init__(self, spritesheet, player: Player, pos: tuple[int, int] = None):
         """
@@ -65,8 +65,8 @@ class AbilityBar:
         self.spritesheet = spritesheet
         if pos:
             self.x, self.y = pos
-            height = self.y * 2
-            width = int(height / 4)
+            self.height = self.y * 2
+            self.width = int(self.height / 4)
         self.abilities = [Ability(self), Ability(self), Ability(self), Ability(self)]
 
     def update(self):
@@ -93,7 +93,7 @@ class AbilityBar:
         :param place: place of the ability on the abilitybar - from 0 to 3
         :return: pos (x, y) of the center of the ability image
         """
-        return (int(self.width / 2), int(self.height / 8 + self.height / 4 * place))
+        return int(self.width / 2), int(self.height / 8 + self.height / 4 * place)
 
     def set_ability(self, place: int, ability: Ability) -> None:
         """
@@ -128,6 +128,7 @@ class KnightLeftUp(Ability):
         """:return: surface with the ability image rendered on it """
         return self.frames[self.cd_left]
 
+
 class KnightUpLeft(Ability):
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
@@ -151,6 +152,7 @@ class KnightUpLeft(Ability):
         :return: surface with the ability text rendered on it """
         return self.frames[self.cd_left]
 
+
 class KnightUpRight(Ability):
     """ Represents top-right dash activated by L key """
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
@@ -172,6 +174,7 @@ class KnightUpRight(Ability):
         """ Displays current CD
         :return: surface with the ability image rendered on it """
         return self.frames[self.cd_left]
+
 
 class KnightRightUp(Ability):
     """ Represents left-top dash activated by semicolon """
@@ -195,9 +198,10 @@ class KnightRightUp(Ability):
         :return: surface with the ability image rendered on it """
         return self.frames[self.cd_left]
 
+
 class RushUp(Ability):
     """Represents three-steps-up dash"""
-    #coordinates of the upper-left corner of the first frame of animation on the spritesheet
+    # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 1280
 
@@ -217,8 +221,9 @@ class RushUp(Ability):
         :return: surface with the ability image rendered on it """
         return self.frames[self.cd_left]
 
+
 class Hop(Ability):
-    """Represents a hop, effectively teleporting the player two tiles up"""
+    """Represents a teleport two tiles up"""
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 1600
@@ -239,6 +244,7 @@ class Hop(Ability):
         :return: surface with the ability image rendered on it """
         return self.frames[self.cd_left]
 
+
 class Mirror(Ability):
     """Mirrors the player's X position"""
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
@@ -255,10 +261,14 @@ class Mirror(Ability):
     def execute(self) -> None:
         """executes the ability effect"""
         newx = self.player.tower.WIDTH - self.player.x - 1
-        self.player.move_sequence((newx-self.player.x, 0))
+        self.player.move_sequence((newx - self.player.x, 0))
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
         :return: surface with the ability image rendered on it """
         return self.frames[self.cd_left]
 
+
+if __name__ == '__main__':
+    print("this module is for describing the abilities of the game 'Higher', it's not supposed to be "
+          "launched directly. To learn more about the game, visit https://github.com/kligunov-id/higher")

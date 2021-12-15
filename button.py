@@ -1,8 +1,15 @@
 import pygame
+from pygame.rect import Rect
+
 from locals import FONT_NAME, Color
 from os import path
 
+
 class Button:
+    text: str
+    font: pygame.font.Font
+    text_surface: pygame.Surface
+    text_rect: Rect
 
     FONTSIZE_SMALL = 60
     FONTSIZE_BIG = 70
@@ -35,7 +42,7 @@ class Button:
             self.text = text
         self.font = pygame.font.Font(path.join('resources', 'fonts', Button.FONT_NAME), int(self.fontsize))
         self.text_surface = self.font.render(self.text, True, Button.COLOR)
-        self.text_rect = self.text_surface.get_rect(center = self.center)
+        self.text_rect = self.text_surface.get_rect(center=self.center)
 
     def update(self) -> None:
         """ Animates button """

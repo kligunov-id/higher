@@ -14,13 +14,14 @@ Constants:
     FONT_NAME, FONT_SIZE
     
     TITLE
-    TEXT_START, TEXT_QUIT, TEXT_BACK_MENU, TEXT_RESTART, TEXT_GAME_OVER
+    TEXT_START, TEXT_QUIT, TEXT_BACK_MENU, TEXT_RESTART, TEXT_GAME_OVER, TEXT_SCORE
 """
+
 
 class Color:
     """ Defines a set of colors used in the project """
 
-    RED  = (255, 0, 0)
+    RED = (255, 0, 0)
     BLUE = (0, 0, 255)
     YELLOW = (255, 255, 0)
     GREEN = (0, 255, 0)
@@ -30,6 +31,7 @@ class Color:
     BLACK = (0, 0, 0)
     DEEP_BLUE = (0, 17, 102)
     CITRINE = (204, 204, 0)
+
 
 # Refresh rate
 FPS = 30

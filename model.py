@@ -1,10 +1,6 @@
-from os import path
-from enum import Enum, auto
+import random
 from locals import *
 from chunks import *
-import pygame
-from math import ceil
-from abc import ABC
 from spritesheet import *
 
 """
@@ -12,7 +8,7 @@ Responsible for modeling (and temporary for rendering!) of the game field and th
 
 Classes:
     
-    CellType(Enum)
+    Cell
     Tower
     Player
     
@@ -36,13 +32,29 @@ def square(screen: pygame.Surface, color: tuple[int, int, int], center: tuple[in
 
 
 class Cell:
-    """ Describes all possible cells, stores the cell image and it's type """
-    def __init__(self, size, spritesheet, tup):
-        self.celltype = tup[0]
-        self.image = pygame.transform.scale(spritesheet.image_at(tup[1]), size)
+    """ Describes all possible cells, stores the cell image and it's type.
+    Designed to be created with the Tower.load_chunk() function"""
 
-    def render(self):
+    def __init__(self, size, ctype, image):
+        """
+        initiates the cell.
+        :param size: the dimensions (width, height) of the cell
+        :param ctype: the type of the cell: W for wall, H for hole and N for nothing, or an empty tile
+        :param image: the image of the cell
+        """
+        self.size = size  # is currently unused but may be useful to child classes
+        self.celltype = ctype
+        self.image = pygame.transform.scale(image, size)
+
+    def render(self) -> pygame.Surface:
+        """:returns: a pygame surface with the cell image"""
         return self.image
+
+    def is_empty(self):
+        return self.celltype == 'N'
+
+    def is_walkable(self):
+        return self.celltype == 'N' or self.celltype == 'H'
 
 
 class Tower:
@@ -55,18 +67,40 @@ class Tower:
         self.spritesheet = SpriteSheet('towersheet.png')
         self.cells = []
         self.player = Player(self)
-        self.load_chunk('field.txt')
-        self.level = 0
+        self.level = 0  # level of the floor of the tower
+        self.loaded_level = 0  # level of the highest loaded cell
+        self.load_chunk(0, '0_0.txt')
 
     def move_floor(self, amount=1) -> None:
         """  Moves tower any amount of cells down
-        :param amount: The amoutn of cells to raise the level by
+        :param amount: The amount of cells to raise the level by
         :return: None
         """
         self.level += amount
 
-    def load_chunk(self, chunk_name) -> None:
-        """loads chunk from a prepared(see chunks.py) file"""
+    @staticmethod
+    def get_chunk_name(level: int):
+        """
+        generates a name for a chunk to be generated from the level the tower is on
+        the name is built by combining the difficulty and a random number for the chunk
+        :param level: the level of the tower (to get the appropriate difficulty from)
+        """
+        if level <= 20:
+            difficulty = 0
+        elif level <= 80:
+            difficulty = 1
+        else:
+            difficulty = 2
+        number = random.randint(1, 10)
+        return str(difficulty) + "_" + str(number) + ".txt"
+
+    def load_chunk(self, level, chunk_name='') -> None:
+        """loads chunk from a prepared(see chunks.py) file
+        :param level: level of the tower, passed to get_chunk_name
+        :param chunk_name: optional, use if you want to load a specific chunk by name
+        """
+        if not chunk_name:
+            chunk_name = self.get_chunk_name(level)
         dump = open(path.join('resources', 'chunks', chunk_name + '_refactored.txt'), 'r').readlines()
         dump.reverse()
         newcells = []
@@ -74,30 +108,44 @@ class Tower:
         for n, line in enumerate(dump):
             newcells.append([])
             for sym in line.strip():
-                newcells[n].append(Cell((a, a), self.spritesheet, slovar2[sym]))
+                newcells[n].append(Cell((a, a), slovar2[sym][0], self.spritesheet.image_at(slovar2[sym][1])))
         self.cells = self.cells + newcells
+        self.loaded_level += len(dump)
 
-    def is_inside(self, pos: tuple[int, int]) -> bool:
-        """:return: True if pos is a valid cell """
+    @staticmethod
+    def is_inside(pos: tuple[int, int]) -> bool:
+        """
+        :param pos: (x, y) of a cell
+        :returns: True if pos is a valid cell
+        """
         x, y = pos
-        return 0 <= x and x <= Tower.WIDTH
+        return 0 <= x <= Tower.WIDTH
 
     def is_empty(self, pos: tuple[int, int]) -> bool:
-        """:return: True if player can stay in the cell """
+        """
+        :param pos: (x, y) of a cell
+        :returns: True if player can stay in the cell
+        """
         x, y = pos
-        return self.is_inside(pos) and self.cells[y][x].celltype == 'N'
+        return self.is_inside(pos) and self.cells[y][x].is_empty()
 
     def is_walkable(self, pos: tuple[int, int]) -> bool:
-        """:return: True if player can walk on the cell """
+        """
+        :param pos: (x, y) of a cell
+        :returns: True if player can walk on the cell(if the cell is empty, or if the cell is a hole)
+        """
         x, y = pos
-        return self.is_inside(pos) and self.cells[y][x].celltype == 'N' or self.cells[y][x].celltype == 'H'
+        return self.is_inside(pos) and self.cells[y][x].is_walkable()
 
     def update(self) -> None:
-        """ For now tower has no animation or progression """
-        pass
+        """Unpacks new chunks when the loaded amount gets too small"""
+        if self.loaded_level <= self.level + 20:
+            self.load_chunk(self.level)
 
     def handle(self, event: pygame.event.Event) -> None:
-        """Handles events, dropping the tower 1 floor every button press"""
+        """Handles events, dropping the tower 1 floor every button press
+        :param event: a pygame.Event to be handled
+        """
         if event.type == pygame.KEYDOWN:
             self.player.handle(event)
             self.move_floor()
@@ -111,36 +159,51 @@ class Tower:
         a = 0.8 * HEIGHT / Tower.HEIGHT
         x = WIDTH / 2 + (j - Tower.WIDTH / 2 + 1 / 2) * a
         y = (Tower.HEIGHT - 1 - i) * a
-        return (x, y)
+        return x, y
 
     def render(self, screen: pygame.Surface) -> None:
-        """ Renders all tower cells 
-        :param screen: pygame surface to blit image on """
+        """
+        Renders cells and the player onto a surface
+        :param screen: pygame surface to blit image on
+        """
         a = int(0.8 * HEIGHT / Tower.HEIGHT)
-        level = int(self.level)#fixme
+        level = int(self.level)
         for i in range(level, level + Tower.HEIGHT):
             for j in range(Tower.WIDTH):
-                pos = (Tower.calc_center((i-level, j))[0]-a/2, Tower.calc_center((i-level, j))[1]-a/2)
+                pos = (Tower.calc_center((i - level, j))[0] - a / 2, Tower.calc_center((i - level, j))[1] - a / 2)
                 screen.blit(self.cells[i][j].render(), pos)
         self.player.render(screen)
 
 
 class Player:
-    """ Responsible for player moving, rendering """
+    """Responsible for player movement, rendering"""
 
     def __init__(self, tower: Tower):
-        """ Initializes starting position """
+        """
+        Initializes starting position
+        :param tower: the Tower object inside which the player is located
+        """
         self.x, self.y = Tower.WIDTH // 2, 3
         self.tower = tower
 
     def move(self, pos, step) -> tuple[int, int]:
-        """ Moves player if possible """
+        """
+        Calculates movement from a given position
+        :param pos: (x,y) of a cell
+        :param step: (dx, dy) of a single movement
+        :return: (x, y) of the cell after the movement
+        """
         new_x, new_y = pos[0] + step[0], pos[1] + step[1]
         if self.tower.is_walkable((new_x, new_y)):
-            return (new_x, new_y)
+            return new_x, new_y
         return pos
 
-    def move_sequence(self, *steps):
+    def move_sequence(self, *steps) -> None:
+        """
+        moves the player a sequence of steps
+        :param steps: a list of (dx, dy) of movements
+        :return: None
+        """
         new_pos = (self.x, self.y)
         for step in steps:
             new_pos = self.move(new_pos, step)
@@ -148,12 +211,14 @@ class Player:
                 self.x, self.y = new_pos
 
     def update(self) -> None:
-        """ For now tower has no animation or progression """
+        """ For now player has no animation or progression """
         pass
 
     def handle(self, event: pygame.event.Event) -> None:
-        """ Handles WASD movement
-        :param event: Event to be handled, should be of KEYDOWN type """
+        """
+        Handles WASD movement
+        :param event: Event to be handled, should be of KEYDOWN type
+        """
         if event.type != pygame.KEYDOWN:
             return
         if event.key == pygame.K_w:
@@ -166,7 +231,10 @@ class Player:
             self.move_sequence((1, 0))
 
     def render(self, screen: pygame.Surface) -> None:
-        """:param screen: pygame surface to blit image on """
+        """
+        renders self onto a screen
+        :param screen: pygame surface to blit image on
+        """
         a = 0.8 * HEIGHT / Tower.HEIGHT
         square(screen, Color.MAGENTA, Tower.calc_center((self.y - self.tower.level, self.x)), a)
 
@@ -176,4 +244,5 @@ class Player:
 
 
 if __name__ == '__main__':
-    print("wherefore has't thee did summon me m'rtal, art thee not acknown yond i'm not the main module?")
+    print("this module is for describing the functions and classes of the game 'Higher', it's not supposed to be "
+          "launched directly. To learn more about the game, visit https://github.com/kligunov-id/higher")
