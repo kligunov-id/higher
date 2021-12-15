@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from button import Button
+from button import ButtonList
 import model
 import beatline
 from abilities import *
@@ -70,13 +70,17 @@ class MainMenu(GameState):
     def __init__(self):
         """ Initializes menu with buttons """
         super().__init__()
-
-        self.start_button = Button(TEXT_START, (WIDTH / 2, 0.4 * HEIGHT),
-            action=lambda :Game.switch_to(GameSession()), keys=[pygame.K_n])
-        self.quit_button = Button(TEXT_QUIT, (WIDTH / 2, 0.6 * HEIGHT),
-            action=exit, keys=[pygame.K_q, pygame.K_BACKSPACE])
-        self.buttons = [self.start_button, self.quit_button]
         
+        self.button_list = ButtonList((WIDTH / 2, 0.4 * HEIGHT), 0.2 * HEIGHT)
+        # Start button
+        self.button_list.construct_button(TEXT_START,
+            action=lambda:Game.switch_to(GameSession()),
+            keys=[pygame.K_n])
+        # Quit button
+        self.button_list.construct_button(TEXT_QUIT,
+            action=exit,
+            keys=[pygame.K_q, pygame.K_BACKSPACE])
+
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
 
     def render(self) -> pygame.Surface:
@@ -89,22 +93,19 @@ class MainMenu(GameState):
         text_rect = text_surface.get_rect(center=(WIDTH / 2, 0.1 * HEIGHT))
         screen.blit(text_surface, text_rect)
 
-        for button in self.buttons:
-            button.render(screen)
+        self.button_list.render(screen)
         
         return screen
 
     def update(self) -> None:
         """ Animates buttons """
-        for button in self.buttons:
-            button.update()
+        self.button_list.update()
 
     def handle(self, event: pygame.event.Event) -> None:
         """ Handles mouse clicks
         :param event: PyGame event to be handled
         """
-        for button in self.buttons:
-            button.handle(event)
+        self.button_list.handle(event)
 
 
 class GameOver(GameState):
@@ -114,14 +115,17 @@ class GameOver(GameState):
         """ Initializes menu with buttons and score"""
         super().__init__()
 
-        self.restart_button = Button(TEXT_RESTART, (WIDTH / 2, 0.6 * HEIGHT),
-            action=lambda: Game.switch_to(GameSession()), keys=[pygame.K_p])
-        self.menu_button = Button(TEXT_BACK_MENU, (WIDTH / 2, 0.8 * HEIGHT),
-            action=lambda: Game.switch_to(MainMenu()), keys=[pygame.K_b, pygame.K_BACKSPACE])
-        self.buttons = [self.restart_button, self.menu_button]
+        self.button_list = ButtonList((WIDTH / 2, 0.6 * HEIGHT), 0.2 * HEIGHT)
+        # Restart button
+        self.button_list.construct_button(TEXT_RESTART,
+            action=lambda: Game.switch_to(GameSession()),
+            keys=[pygame.K_p])
+        # Back button
+        self.button_list.construct_button(TEXT_BACK_MENU,
+            action=lambda: Game.switch_to(MainMenu()),
+            keys=[pygame.K_b, pygame.K_BACKSPACE])
         
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
-
         self.score = score
 
     def render(self) -> pygame.Surface:
@@ -137,22 +141,19 @@ class GameOver(GameState):
         screen.blit(text_surface, text_rect)
         screen.blit(score_surface, score_rect)
 
-        for button in self.buttons:
-            button.render(screen)
+        self.button_list.render(screen)
         
         return screen
 
     def update(self) -> None:
         """ Animates buttons """
-        for button in self.buttons:
-            button.update()
+        self.button_list.update()
 
     def handle(self, event: pygame.event.Event) -> None:
-        """ Handles mouse clicks
+        """ Handles mouse and keyboard input
         :param event: PyGame event to be handled
         """
-        for button in self.buttons:
-            button.handle(event)
+        self.button_list.handle(event)
 
 
 class GameSession(GameState):
