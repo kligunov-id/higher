@@ -1,18 +1,28 @@
 import pygame
 from os import path
 
+""" 
+Implements SpriteSheet
+
+Classes:
+
+    SpriteSheet
+"""
 
 class SpriteSheet:
+    
+    """ Is responsible for loading spritesheets from files and extraction of individual sprites"""
 
-    def __init__(self, filename):
-        """Load the sheet."""
+    def __init__(self, filename: str):
+        """ Loads the sheet from given file 
+        :param filename: Name of the .png sprite sheet """
         try:
             self.sheet = pygame.image.load(path.join('resources', 'images', filename)).convert()
         except pygame.error as e:
             print(f"Unable to load spritesheet image: {filename}")
             raise SystemExit(e)
 
-    def image_at(self, rectangle, colorkey=None) -> pygame.Surface:
+    def image_at(self, rectangle: pygame.Rect, colorkey=None) -> pygame.Surface:
         """
         Load a specific image from a specific rectangle.
         :param rectangle: (x, y, width, height) of the specified image part, or a pygame.Rect object
@@ -28,7 +38,7 @@ class SpriteSheet:
             image.set_colorkey(colorkey, pygame.RLEACCEL)
         return image
 
-    def images_at(self, rects, colorkey=None) -> list[pygame.Surface]:
+    def images_at(self, rects: list[pygame.Rect], colorkey=None) -> list[pygame.Surface]:
         """
         Load a whole bunch of images and return them as a list.
         :param rects: rectangles (x, y, width, height) to extract the images at
@@ -37,7 +47,7 @@ class SpriteSheet:
         """
         return [self.image_at(rect, colorkey) for rect in rects]
 
-    def load_strip(self, rect, image_count, colorkey=None):
+    def load_strip(self, rect: pygame.Rect, image_count: int, colorkey=None) -> list[pygame.Surface]:
         """
         Load a whole strip of images, and return them as a list.
         :param rect: rectangle (x, y, width, height) - the rectangle of the left-most image
