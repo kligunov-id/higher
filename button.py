@@ -17,16 +17,18 @@ class Button:
     FONT_PATH = FONT_PATH
     COLOR = Color.WHITE
 
-    def __init__(self, text, center, action=None):
+    def __init__(self, text: str, center: tuple[int, int], action=None, keys=None):
         """ Initializes new button
         :param text: Displayed button text
         :param center: List of coordinates (x, y) of the button text
         :param action: Function with 0 parameters which will be called on-click
+        :param keys: Pygame key id to trigger button
         """
         self.center = center
         self.fontsize = Button.FONTSIZE_SMALL
         self.action = action
         self.update_text(text)
+        self.keys = keys
 
     def render(self, screen: pygame.Surface) -> None:
         """ Blits button image onto given surface
@@ -63,12 +65,13 @@ class Button:
         return self.text_rect.collidepoint(pygame.mouse.get_pos())
     
     def handle(self, event: pygame.event.Event) -> None:
-        """ Handles mouse clicks
-        :param event: PyGame event to be handled, should be of MOUSEBUTTONDOWN type
+        """ Handles mouse clicks and key presses
+        :param event: PyGame event to be handled
         """
-        if event.type != pygame.MOUSEBUTTONDOWN:
-            return
-        if self.action is not None and self.is_mouse_on():
+        should_trigger = ((event.type == pygame.MOUSEBUTTONDOWN and self.is_mouse_on())
+                       or (event.type == pygame.KEYDOWN and event.key in self.keys))
+
+        if should_trigger and self.action is not None:
             self.action()
 
 

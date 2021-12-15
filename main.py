@@ -72,8 +72,9 @@ class MainMenu(GameState):
         super().__init__()
 
         self.start_button = Button(TEXT_START, (WIDTH / 2, 0.4 * HEIGHT),
-            action=lambda :Game.switch_to(GameSession()))
-        self.quit_button = Button(TEXT_QUIT, (WIDTH / 2, 0.6 * HEIGHT), action=exit)
+            action=lambda :Game.switch_to(GameSession()), keys=[pygame.K_n])
+        self.quit_button = Button(TEXT_QUIT, (WIDTH / 2, 0.6 * HEIGHT),
+            action=exit, keys=[pygame.K_q, pygame.K_BACKSPACE])
         self.buttons = [self.start_button, self.quit_button]
         
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
@@ -102,9 +103,8 @@ class MainMenu(GameState):
         """ Handles mouse clicks
         :param event: PyGame event to be handled
         """
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            for button in self.buttons:
-                button.handle(event)
+        for button in self.buttons:
+            button.handle(event)
 
 
 class GameOver(GameState):
@@ -115,9 +115,9 @@ class GameOver(GameState):
         super().__init__()
 
         self.restart_button = Button(TEXT_RESTART, (WIDTH / 2, 0.6 * HEIGHT),
-            action=lambda: Game.switch_to(GameSession()))
+            action=lambda: Game.switch_to(GameSession()), keys=[pygame.K_p])
         self.menu_button = Button(TEXT_BACK_MENU, (WIDTH / 2, 0.8 * HEIGHT),
-            action=lambda: Game.switch_to(MainMenu()))
+            action=lambda: Game.switch_to(MainMenu()), keys=[pygame.K_b, pygame.K_BACKSPACE])
         self.buttons = [self.restart_button, self.menu_button]
         
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
@@ -151,9 +151,8 @@ class GameOver(GameState):
         """ Handles mouse clicks
         :param event: PyGame event to be handled
         """
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            for button in self.buttons:
-                button.handle(event)
+        for button in self.buttons:
+            button.handle(event)
 
 
 class GameSession(GameState):
