@@ -35,24 +35,33 @@ class GameState(ABC):
 
 
 class Game:
-    """ Wrapper class which resposibility is to allow state switching """
+    """ Singleton wrapper class which resposibility is to allow state switching """
     state: GameState
+    _instance = None
 
     def __init__(self):
         """ Initializes the only memeber """
+        Game._instance = self
         self.switch_to(MainMenu())
 
-    def switch_to(self, new_state: GameState):
+    def _switch_to(self, new_state: GameState) -> None:
         """ Changes game state
-        :param new_state: New state, must be an instance of a class derivated from GameState 
+        :param new_state: New state, *instance* of a derivative from GameState
+        .. note: For internal use only
         """
         self.state = new_state
-        self.state.game = self
         
-        # Passes over function calls to state object
+        # Passes over function calls to GameState object
         self.render = self.state.render
         self.handle = self.state.handle
         self.update = self.state.update
+
+    @staticmethod
+    def switch_to(new_state: GameState) -> None:
+        """ Changes game state
+        :param new_state: New state, *instance* of a derivative from GameState 
+        """
+        Game._switch_to(Game._instance, new_state)
 
 
 class MainMenu(GameState):
@@ -62,10 +71,8 @@ class MainMenu(GameState):
         """ Initializes menu with buttons """
         super().__init__()
 
-        def start_game():
-            self.game.switch_to(GameSession())
-
-        self.start_button = Button(TEXT_START, (WIDTH / 2, 0.4 * HEIGHT), action=start_game)
+        self.start_button = Button(TEXT_START, (WIDTH / 2, 0.4 * HEIGHT),
+            action=lambda :Game.switch_to(GameSession()))
         self.quit_button = Button(TEXT_QUIT, (WIDTH / 2, 0.6 * HEIGHT), action=exit)
         self.buttons = [self.start_button, self.quit_button]
         
@@ -107,14 +114,10 @@ class GameOver(GameState):
         """ Initializes menu with buttons and score"""
         super().__init__()
 
-        def return_to_menu():
-            self.game.switch_to(MainMenu())
-
-        def restart_game():
-            self.game.switch_to(GameSession())
-
-        self.restart_button = Button(TEXT_RESTART, (WIDTH / 2, 0.6 * HEIGHT), action=restart_game)
-        self.menu_button = Button(TEXT_BACK_MENU, (WIDTH / 2, 0.8 * HEIGHT), action=return_to_menu)
+        self.restart_button = Button(TEXT_RESTART, (WIDTH / 2, 0.6 * HEIGHT),
+            action=lambda: Game.switch_to(GameSession()))
+        self.menu_button = Button(TEXT_BACK_MENU, (WIDTH / 2, 0.8 * HEIGHT),
+            action=lambda: Game.switch_to(MainMenu()))
         self.buttons = [self.restart_button, self.menu_button]
         
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
@@ -201,7 +204,7 @@ class GameSession(GameState):
         """switches to the game over screen if the player is dead"""
         if not self.tower.player.is_alive():
             pygame.mixer.music.stop()
-            self.game.switch_to(GameOver(self.score))
+            Game.switch_to(GameOver(self.score))
         for elem in self.dynamic_elements:
             elem.update()
         if self.beatline.cleanup():
