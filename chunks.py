@@ -1,7 +1,19 @@
 import os
-from os import path
 
-slovar = {
+"""
+Resposible for converting human-readable chunks into game-readable type
+
+Functions:
+
+    redo_chunk(filename) -> None
+
+Constants:
+
+    letter_by_state
+    ctype_by_letter
+"""
+
+letter_by_state = {
     -10: 'A',
     -4: 'B',
     -3: 'C',
@@ -41,7 +53,7 @@ slovar = {
     32: 'Y',
     33: 'Z'
 }
-slovar2 = {
+ctype_by_letter = {
     'A': ('H', (640, 0, 160, 160)),
     'B': ('N', (480, 0, 160, 160)),
     'C': ('N', (320, 0, 160, 160)),
@@ -71,9 +83,9 @@ slovar2 = {
 }
 
 
-def redo_chunk(filename):
-    """transforms a file that's denoted by . as an empty tile, H as a hole and # as a wall \
-    into a file that's readable by the load_chunk function
+def redo_chunk(filename) -> None:
+    """ Transforms a file that denotes empty tiles by '.', holes by 'H' and walls by 'W' \
+        into a file that's readable by the load_chunk function
     :param filename: name of the file, including the .txt OR 'all' to redo all files in \\resources\\chunks directory
     """
     with open(path.join('resources', 'chunks', filename + '_refactored.txt'), 'w') as f:
@@ -97,7 +109,7 @@ def redo_chunk(filename):
                         state += 1
                     if y == len(dump) - 1 and (x == 0 or x == len(line) - 1):
                         state += 4
-                letter = slovar[state]
+                letter = letter_by_state[state]
                 f.write(letter)
             f.write('\n')
 

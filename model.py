@@ -1,6 +1,6 @@
 import random, pygame
 from locals import *
-from chunks import slovar2
+from chunks import ctype_by_letter
 from spritesheet import SpriteSheet
 
 """
@@ -104,7 +104,7 @@ class Tower:
         for n, line in enumerate(dump):
             newcells.append([])
             for sym in line.strip():
-                newcells[n].append(Cell((a, a), slovar2[sym][0], self.spritesheet.image_at(slovar2[sym][1])))
+                newcells[n].append(Cell((a, a), ctype_by_letter[sym][0], self.spritesheet.image_at(ctype_by_letter[sym][1])))
         self.cells = self.cells + newcells
         self.loaded_level += len(dump)
 
