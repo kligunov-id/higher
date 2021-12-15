@@ -8,16 +8,16 @@ class Line:
     Handles unpacking new beats from a file, and validating whether any beats are in the active zone or not
     """
 
-    def __init__(self, pos: tuple[int, int], width: int, filename: str, timeloop: int):
+    def __init__(self, pos: tuple[int, int], width: int, file_path: str, timeloop: int):
         """
         :param pos: the position (x, y) of the center of the line
         :param width: the width of the line
-        :param filename: the name of the file that the line will extract beat data from
+        :param beat_file_path: the path of the file that the line will extract beat data from
         :param timeloop: the amount of milliseconds the beats will be visible on the line
         """
         self.birthtime = pygame.time.get_ticks()
         self.time = 0
-        self.filepath = os.path.join('resources', 'beatlines', filename)
+        self.file_path = file_path
         self.timeloop = timeloop
         self.pos = pos
         self.width = width
@@ -61,7 +61,7 @@ class Line:
         :param end_time: the last millisecond to which the beats will be unpacked
         :return: None, instead appends Beat objects to self.beats
         """
-        with open(self.filepath, 'r') as f:
+        with open(self.file_path, 'r') as f:
             dump = f.readlines()
             for time in dump:
                 time = int(float(time.strip()) * 1000)

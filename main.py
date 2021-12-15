@@ -69,7 +69,7 @@ class MainMenu(GameState):
         self.quit_button = Button(TEXT_QUIT, (WIDTH / 2, 0.6 * HEIGHT), action=exit)
         self.buttons = [self.start_button, self.quit_button]
         
-        self.font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE)
+        self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
 
     def render(self) -> pygame.Surface:
         """ Renders title and menu buttons
@@ -117,7 +117,7 @@ class GameOver(GameState):
         self.menu_button = Button(TEXT_BACK_MENU, (WIDTH / 2, 0.8 * HEIGHT), action=return_to_menu)
         self.buttons = [self.restart_button, self.menu_button]
         
-        self.font = pygame.font.Font(path.join('resources', 'fonts', FONT_NAME), FONT_SIZE)
+        self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
 
         self.score = score
 
@@ -165,7 +165,7 @@ class GameSession(GameState):
         self.abilitysheet = SpriteSheet('abilitysheet.png')
 
         self.tower = model.Tower()
-        self.beatline = beatline.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, 'Absolute Valentine - In the 42nd Street.txt', 2000)
+        self.beatline = beatline.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, MUSIC_BEAT_PATH, 2000)
         self.abilitybar = AbilityBar(self.abilitysheet, self.tower.player)
 
         self.abilitybar.set_ability(0, KnightLeftUp(self.abilitybar))
@@ -176,10 +176,10 @@ class GameSession(GameState):
         self.dynamic_elements = [self.beatline, self.abilitybar, self.tower]
 
         try:
-            pygame.mixer.music.load(path.join('resources', 'music', 'Absolute Valentine - In the 42nd Street.mp3'))
+            pygame.mixer.music.load(MUSIC_PATH)
             pygame.mixer.music.play()
         except pygame.error:
-            print("Failed to play Music, make sure that the game files are intact")
+            print(MUSCI_PLAY_ERROR)
 
     def handle(self, event):
         """handles user input, checks whether any beats are active"""

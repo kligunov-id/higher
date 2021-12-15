@@ -1,3 +1,5 @@
+from os import path
+
 """
 Defines global scope constants
 
@@ -42,6 +44,7 @@ WIDTH, HEIGHT = 1280, 720
 # Font
 FONT_NAME = "SUPERSCR.TTF"
 FONT_SIZE = 50
+FONT_PATH = path.join('resources', 'fonts', FONT_NAME)
 
 # In-game text
 TITLE = "Higher"
@@ -51,3 +54,8 @@ TEXT_BACK_MENU = "Back to Menu"
 TEXT_RESTART = "Play Again"
 TEXT_GAME_OVER = "Game over!"
 TEXT_SCORE = "Your Score:"
+
+# Music
+MUSIC_TITLE = "Absolute Valentine - In the 42nd Street"
+MUSIC_PATH = path.join("resources", "music", MUSIC_TITLE + ".mp3")
+MUSIC_BEAT_PATH = path.join("resources", "beatlines", MUSIC_TITLE + ".txt")
