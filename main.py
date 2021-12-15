@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from button import Button
 import model
-import MusLine
+import beatline
 from abilities import *
 
 
@@ -165,7 +165,7 @@ class GameSession(GameState):
         self.abilitysheet = SpriteSheet('abilitysheet.png')
 
         self.tower = model.Tower()
-        self.beatline = MusLine.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, 'Absolute Valentine - In the 42nd Street.txt', 2000)
+        self.beatline = beatline.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, 'Absolute Valentine - In the 42nd Street.txt', 2000)
         self.abilitybar = AbilityBar(self.abilitysheet, self.tower.player)
 
         self.abilitybar.set_ability(0, KnightLeftUp(self.abilitybar))
