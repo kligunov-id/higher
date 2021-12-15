@@ -7,16 +7,18 @@ Classes:
     
     Color
 
-Functions:
-
 Constants:
 
     FPS
     WIDTH, HEIGHT
+    
     FONT_NAME, FONT_SIZE
     
     TITLE
     TEXT_START, TEXT_QUIT, TEXT_BACK_MENU, TEXT_RESTART, TEXT_GAME_OVER, TEXT_SCORE
+
+    MUSIC_TITLE, MUSIC_PATH
+    MUSIC_BEAT_PATH
 """
 
 

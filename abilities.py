@@ -1,10 +1,18 @@
 from model import *
 from abc import ABC
 
+"""
+    Stores and renders abilities via AbilityBar
+    Implements different abilities
 
-def weirdscale(surface, size):
-    return pygame.transform.scale(pygame.transform.scale2x(pygame.transform.scale2x(surface)), size)
+    Classes:
 
+        AbilityBar
+        Ability
+
+        KnightLeftUp, KnightUpLeft, KnightUpRight, KnightRightUp
+        RushUp, Hop, Mirror
+"""
 
 class Ability(ABC):
     """ Renders ability, tracks it CD and executes it """
@@ -51,6 +59,8 @@ class Ability(ABC):
 
 
 class AbilityBar:
+    """ Stores and manages abilities, renders and executes them """
+
     keys = [pygame.K_h, pygame.K_j, pygame.K_k, pygame.K_l]
     height = int(HEIGHT * 0.8)
     width = int(height * 0.25)
@@ -69,11 +79,14 @@ class AbilityBar:
             self.width = int(self.height / 4)
         self.abilities = [Ability(self), Ability(self), Ability(self), Ability(self)]
 
-    def update(self):
+    def update(self) -> None:
+        """ Updates animation states of abilities """
         for ability in self.abilities:
             ability.update()
 
-    def render(self, screen):
+    def render(self, screen: pygame.Surface) -> None:
+        """ Renders ability sprite
+        :param screen: PyGame surface to blit onto """
         surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
         for place, ability in enumerate(self.abilities):
             aimage = ability.render()
@@ -81,7 +94,8 @@ class AbilityBar:
             surf.blit(aimage, arect)
         screen.blit(surf, surf.get_rect(center=(self.x, self.y)))
 
-    def handle(self, event):
+    def handle(self, event: pygame.event.Event) -> None:
+        """ Executes abilities when binded keys are pressed """
         if event.type != pygame.KEYDOWN:
             return
         for ability in self.abilities:
@@ -107,7 +121,7 @@ class AbilityBar:
 
 
 class KnightLeftUp(Ability):
-    """ Represents left-top dash activated by J key """
+    """ Represents left-top dash """
 
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
@@ -130,6 +144,8 @@ class KnightLeftUp(Ability):
 
 
 class KnightUpLeft(Ability):
+    """ Represents top-left dash """
+
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 640
@@ -140,8 +156,6 @@ class KnightUpLeft(Ability):
         self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
         for i, frame in enumerate(self.frames):
             self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
-
-    """ Represents top-left dash activated by L key """
 
     def execute(self) -> None:
         """ Teleports to the left and top """
@@ -154,7 +168,7 @@ class KnightUpLeft(Ability):
 
 
 class KnightUpRight(Ability):
-    """ Represents top-right dash activated by L key """
+    """ Represents top-right dash """
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 320
@@ -177,7 +191,7 @@ class KnightUpRight(Ability):
 
 
 class KnightRightUp(Ability):
-    """ Represents left-top dash activated by semicolon """
+    """ Represents left-top dash """
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 0
@@ -200,7 +214,7 @@ class KnightRightUp(Ability):
 
 
 class RushUp(Ability):
-    """Represents three-steps-up dash"""
+    """ Represents three-steps-up dash """
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 1280
@@ -223,7 +237,7 @@ class RushUp(Ability):
 
 
 class Hop(Ability):
-    """Represents a teleport two tiles up"""
+    """ Represents a teleport two tiles up """
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 1600
@@ -246,7 +260,7 @@ class Hop(Ability):
 
 
 class Mirror(Ability):
-    """Mirrors the player's X position"""
+    """ Mirrors the player's X position """
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 1600
