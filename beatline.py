@@ -2,10 +2,21 @@ import pygame
 import os.path
 
 
+"""
+    Is responisble for beatline.
+    Unpacks beats from premade files and animates them
+    Checks when you are hitting beats
+
+    Classes:
+
+        Line, DrawableLine
+        Beat, DrawableBeat
+"""
+
 class Line:
     """
-    a class that contains the data of the music line
-    Handles unpacking new beats from a file, and validating whether any beats are in the active zone or not
+    Class containing the data of the music line
+    Handles unpacking of new beats from a file, and cheking whether any beats are active
     """
 
     def __init__(self, pos: tuple[int, int], width: int, file_path: str, timeloop: int):
@@ -27,7 +38,7 @@ class Line:
         self.last_update = -100000
         self.unpack(0, 2 * timeloop)
 
-    def update(self):
+    def update(self) -> None:
         """
         updates self.time,
         unpacks extra beats once in self.timeloop
@@ -46,20 +57,20 @@ class Line:
             beat.update()
 
     def cleanup(self) -> bool:
-        """cleans up beats that have reached the end of the beatline, returns True if deleted an Unused beat"""
+        """cleans up beats that have reached the end of the beatline
+        :return: True if deleted an unused beat"""
         if self.beats[0].time - self.time <= -int(self.timeloop / 2):
             return self.beats.pop(0).active
 
-    def handle(self, event):
-        """a placeholder function for handling events"""
+    def handle(self, event: pygame.event.Event) -> None:
+        """ Placeholder function """
         pass
 
-    def unpack(self, start_time: int, end_time: int):
+    def unpack(self, start_time: int, end_time: int) -> None:
         """
         unpacks beats from the self.filepath file
         :param start_time: the first millisecond from which the beats will be unpacked
         :param end_time: the last millisecond to which the beats will be unpacked
-        :return: None, instead appends Beat objects to self.beats
         """
         with open(self.file_path, 'r') as f:
             dump = f.readlines()
@@ -71,17 +82,14 @@ class Line:
                     self.beats.append(DrawableBeat(self, int(time), 200))
         self.last_update = self.time
 
-    def is_active(self):
-        """
-        checks if any beat is active
-        :return: bool
-        """
+    def is_active(self) -> bool:
+        """ :returns: True if any beat is active """
         for beat in self.beats:
             if beat.is_active():
                 return True
         return False
 
-    def deactivate(self):
+    def deactivate(self) -> None:
         """prevents any active beats from being active in the future"""
         for beat in self.beats:
             if beat.is_active():
@@ -89,16 +97,15 @@ class Line:
 
 
 class DrawableLine(Line):
-    """a class that adds visual rendering to the line class"""
+    """ Class extending Line by adding visual representation """
     image: pygame.Surface
     pointer_image: pygame.Surface
 
-    def initiate_images(self, size: tuple[int, int], pointer_size: tuple[int, int] = (6, 40)):
+    def initiate_images(self, size: tuple[int, int], pointer_size: tuple[int, int] = (6, 40)) -> None:
         """
         unpacks images from files, resizes them to parameters
         :param size: the size(width, height) of the line
         :param pointer_size: the size(width, height) of the pointer
-        :return: None
         """
         self.image = pygame.image.load(os.path.join('resources', 'images', 'BeatLine.png'))
         self.image.set_colorkey((255, 255, 255))
@@ -121,11 +128,10 @@ class DrawableLine(Line):
         self.rect = self.image.get_rect()
         self.pointer_rect = self.pointer_image.get_rect()
 
-    def render(self, screen: pygame.Surface):
+    def render(self, screen: pygame.Surface) -> None:
         """
-        renders the line, beats and pointer on the screen
-        :param screen:
-        :return: None
+        Blits line, beats and pointer images
+        :param screen: on the screen 
         """
         self.rect.center = self.pos
         self.pointer_rect.center = self.pos
@@ -153,18 +159,18 @@ class Beat:
         self.y = self.line.pos[1]
         self.active = True  # whether the beat can be used to perform an action (beat.deactivate sets this to false)
 
-    def is_active(self):
+    def is_active(self) -> bool:
         """
         checks whether the beat is active by comparing the time difference between it and the BeatLine to the timeframe
         :return: bool
         """
         return self.active and abs(self.time - self.line.time) < self.timeframe / 2
 
-    def deactivate(self):
+    def deactivate(self) -> None:
         """prevents the beat from being active in the future"""
         self.active = False
 
-    def update(self):
+    def update(self) -> None:
         """
         updates the position of the beat
         """
@@ -172,11 +178,13 @@ class Beat:
 
 
 class DrawableBeat(Beat):
+    """ Class extending Beat functionality by adding visual representation """
+
     image: pygame.Surface
     active_image: pygame.Surface
     background_image: pygame.Surface
 
-    def initiate_images(self, size: tuple[int, int] = (10, 40)):
+    def initiate_images(self, size: tuple[int, int] = (10, 40)) -> None:
         """
         unpacks&resizes images from files
         :param size: size(width, height) of the beat
@@ -201,7 +209,10 @@ class DrawableBeat(Beat):
         self.active_rect = self.active_image.get_rect()
         self.background_rect = self.background_image.get_rect()
 
-    def render(self, screen):
+    def render(self, screen:pygame.Surface) -> None:
+        """ Draws beat with animation
+        :param screen: PyGame surface to blit onto 
+        """
         self.rect.center = (self.x, self.y)
         self.active_rect.center = (self.x, self.y)
         self.background_rect.center = (self.x, self.y)
@@ -213,6 +224,7 @@ class DrawableBeat(Beat):
 
 
 if __name__ == '__main__':
+    """ Testing Tower functionality, module not intended for direct use """
     pygame.init()
     screen = pygame.display.set_mode((800, 600))
     beatline = DrawableLine((400, 300), 320, 'Opening Animal Crossing.mp3.txt', 1000)
