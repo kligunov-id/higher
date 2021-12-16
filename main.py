@@ -3,7 +3,7 @@ from button import ButtonList
 import model
 import beatline
 from abilities import *
-
+from locals import TEXT, MUSIC
 
 class GameState(ABC):
     """ Abstract class responsible for controlling all game elements:
@@ -73,13 +73,15 @@ class MainMenu(GameState):
         
         self.button_list = ButtonList((WIDTH / 2, 0.4 * HEIGHT), 0.2 * HEIGHT)
         # Start button
-        self.button_list.construct_button(TEXT_START,
-            action=lambda:Game.switch_to(GameSession()),
-            keys=[pygame.K_n])
+        self.button_list.construct_button(TEXT.START,
+            action=lambda: Game.switch_to(GameSession()))
+        # Track selection button
+        self.button_list.construct_button(TEXT.SELECT_TRACK,
+            action=lambda: Game.switch_to(MusicSelectionMenu()))
         # Quit button
-        self.button_list.construct_button(TEXT_QUIT,
+        self.button_list.construct_button(TEXT.QUIT,
             action=exit,
-            keys=[pygame.K_q, pygame.K_BACKSPACE])
+            keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE])
 
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
 
@@ -117,13 +119,12 @@ class GameOver(GameState):
 
         self.button_list = ButtonList((WIDTH / 2, 0.6 * HEIGHT), 0.2 * HEIGHT)
         # Restart button
-        self.button_list.construct_button(TEXT_RESTART,
-            action=lambda: Game.switch_to(GameSession()),
-            keys=[pygame.K_p])
+        self.button_list.construct_button(TEXT.RESTART,
+            action=lambda: Game.switch_to(GameSession()))
         # Back button
-        self.button_list.construct_button(TEXT_BACK_MENU,
+        self.button_list.construct_button(TEXT.BACK_MENU,
             action=lambda: Game.switch_to(MainMenu()),
-            keys=[pygame.K_b, pygame.K_BACKSPACE])
+            keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE])
         
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
         self.score = score
@@ -134,9 +135,9 @@ class GameOver(GameState):
         """
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 
-        score_surface = self.font.render(TEXT_SCORE + str(self.score), True, Color.WHITE)
+        score_surface = self.font.render(TEXT.SCORE + str(self.score), True, Color.WHITE)
         score_rect = score_surface.get_rect(center=(WIDTH/2, 0.2 * HEIGHT))
-        text_surface = self.font.render(TEXT_GAME_OVER, True, Color.WHITE)
+        text_surface = self.font.render(TEXT.GAME_OVER, True, Color.WHITE)
         text_rect = text_surface.get_rect(center=(WIDTH / 2, 0.1 * HEIGHT))
         screen.blit(text_surface, text_rect)
         screen.blit(score_surface, score_rect)
@@ -168,7 +169,7 @@ class GameSession(GameState):
         self.abilitysheet = SpriteSheet('abilitysheet.png')
 
         self.tower = model.Tower()
-        self.beatline = beatline.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, MUSIC_BEAT_PATH, 2000)
+        self.beatline = beatline.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, MUSIC.BEAT_PATH, 2000)
         self.abilitybar = AbilityBar(self.abilitysheet, self.tower.player)
 
         self.abilitybar.set_ability(0, KnightLeftUp(self.abilitybar))
@@ -179,10 +180,10 @@ class GameSession(GameState):
         self.dynamic_elements = [self.beatline, self.abilitybar, self.tower]
 
         try:
-            pygame.mixer.music.load(MUSIC_PATH)
+            pygame.mixer.music.load(MUSIC.PATH)
             pygame.mixer.music.play()
         except pygame.error:
-            print(MUSCI_PLAY_ERROR)
+            print(MUSIC.PLAY_ERROR)
 
     def handle(self, event):
         """handles user input, checks whether any beats are active"""
@@ -209,6 +210,49 @@ class GameSession(GameState):
             elem.update()
         if self.beatline.cleanup():
             self.tower.move_floor(1)
+
+class MusicSelectionMenu(GameState):
+    """ Represents music selection screen accessible from main menu """
+
+    def __init__(self):
+        """ Initializes buttons and font """
+        self.button_list = ButtonList((WIDTH / 2, 0.4 * HEIGHT), 0.4 * HEIGHT)
+        
+        def next():
+            MUSIC.next_title()
+            self.button_list.buttons[0].update_text(MUSIC.TITLE)
+
+        self.button_list.construct_button(MUSIC.TITLE, action=next)
+        self.button_list.construct_button(TEXT.BACK_MENU,
+            action=lambda: Game.switch_to(MainMenu()),
+            keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE])
+
+        self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
+
+    def render(self) -> pygame.Surface:
+        """ Renders buttons and text """
+        screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        
+        text_surface = self.font.render(TEXT.SELECT_TRACK_INVITATION, True, Color.WHITE)
+        text_rect = text_surface.get_rect(center=(WIDTH / 2, 0.1 * HEIGHT))
+        screen.blit(text_surface, text_rect)
+        text_surface = self.font.render(TEXT.DIFFICULTY, True, Color.WHITE)
+        text_rect = text_surface.get_rect(center=(WIDTH / 2, 0.6 * HEIGHT))
+        screen.blit(text_surface, text_rect)
+        
+        self.button_list.render(screen)
+
+        return screen
+    
+    def handle(self, event: pygame.event.Event) -> None:
+        """ Handles mouse and keyboard input
+        :param event: PyGame event to be handled
+        """
+        self.button_list.handle(event)
+
+    def update(self) -> None:
+        """ Animates buttons """
+        self.button_list.update()
 
 
 def main():

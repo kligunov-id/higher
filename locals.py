@@ -6,19 +6,22 @@ Defines global scope constants
 Classes:
     
     Color
+    TEXT
+    MUSIC
 
 Constants:
 
     FPS
     WIDTH, HEIGHT
-    
+
     FONT_NAME, FONT_SIZE
     
     TITLE
-    TEXT_START, TEXT_QUIT, TEXT_BACK_MENU, TEXT_RESTART, TEXT_GAME_OVER, TEXT_SCORE
 
-    MUSIC_TITLE, MUSIC_PATH
-    MUSIC_BEAT_PATH
+Function:
+
+    next_track() -> None
+
 """
 
 
@@ -50,14 +53,37 @@ FONT_PATH = path.join('resources', 'fonts', FONT_NAME)
 
 # In-game text
 TITLE = "Higher"
-TEXT_START = "New Game"
-TEXT_QUIT = "Quit"
-TEXT_BACK_MENU = "Back to Menu"
-TEXT_RESTART = "Play Again"
-TEXT_GAME_OVER = "Game over!"
-TEXT_SCORE = "Your Score:"
 
-# Music
-MUSIC_TITLE = "Absolute Valentine - In the 42nd Street"
-MUSIC_PATH = path.join("resources", "music", MUSIC_TITLE + ".mp3")
-MUSIC_BEAT_PATH = path.join("resources", "beatlines", MUSIC_TITLE + ".txt")
+class TEXT:
+    """ Stores game text messages as static variables """
+    START = "New Game"
+    QUIT = "Quit"
+    BACK_MENU = "Back to Menu"
+    RESTART = "Play Again"
+    GAME_OVER = "Game over!"
+    SCORE = "Your Score:"
+    SELECT_TRACK_INVITATION = "Choose your soundtrack:"
+    SELECT_TRACK = "Select Track"
+    DIFFICULTY = ""
+
+class MUSIC:
+    TITLES = ["Absolute Valentine - In the 42nd Street", "Opening Animal Crossing"]
+    DIFFICULTIES = ["Hard", "BROKEN_BEAT"]
+    I = -1
+    
+    TITLE = None
+    PATH = None
+    BEAT_PATH = None
+    
+    PLAY_ERROR = "!!! Failed to play music !!!"
+    
+    @staticmethod
+    def next_title() -> None:
+        """ Cyclically changes soundtrack """
+        MUSIC.I = (MUSIC.I + 1) % len(MUSIC.TITLES)
+        MUSIC.TITLE = MUSIC.TITLES[MUSIC.I]
+        MUSIC.PATH = path.join("resources", "music", MUSIC.TITLE + ".mp3")
+        MUSIC.BEAT_PATH = path.join("resources", "beatlines", MUSIC.TITLE + ".txt")
+        TEXT.DIFFICULTY = f"(Difficulty: {MUSIC.DIFFICULTIES[MUSIC.I]})"
+
+MUSIC.next_title()

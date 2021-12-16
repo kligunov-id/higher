@@ -59,7 +59,7 @@ class Line:
     def cleanup(self) -> bool:
         """cleans up beats that have reached the end of the beatline
         :return: True if deleted an unused beat"""
-        if self.beats[0].time - self.time <= -int(self.timeloop / 2):
+        if self.beats and self.beats[0].time - self.time <= -int(self.timeloop / 2):
             return self.beats.pop(0).active
 
     def handle(self, event: pygame.event.Event) -> None:
