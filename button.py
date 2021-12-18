@@ -8,7 +8,7 @@ Implements buttons and keyboard nevigation through menues
 
 Classes:
 
-    Button
+    Button, Scroll
     ButtonList
 
 Functions:
@@ -104,6 +104,79 @@ class Button:
         if should_trigger and self.action is not None:
             self.action()
 
+class Scroll:
+    """ Provides selection from the number of entries.
+        Is compatible with ButtonList """
+
+    font: pygame.font.Font
+    text_surface: pygame.Surface
+    text_rect: Rect
+    left_surface: pygame.Surface
+    left_rect: Rect
+    right_surface: pygame.Surface
+    right_rect: Rect
+
+    FONTSIZE = 60
+    FONT_PATH = FONT_PATH
+    COLOR = Color.WHITE
+
+    def __init__(self, options: list[str], center: tuple[int, int], post_action=None):
+        """ Initializes new button
+        :param options: Displayed button text
+        :param center: List of coordinates (x, y) of the button text
+        :param post_action: Function with 1 paramater (number of entry chosen)
+                                                to call after each entry change
+        """
+        self.options = options
+        self.center = center
+        self.post_action = post_action
+        self.i = 0
+        self.active = False
+
+    def update_surface(self) -> None:
+        """ Redraws scroll, arrows and recalculates hitbox """
+        self.font = pygame.font.Font(Scroll.FONT_PATH, Scroll.FONTSIZE)
+        # Text
+        self.text_surface = self.font.render(trim(self.options[self.i]), True, Button.COLOR)
+        self.text_rect = self.text_surface.get_rect(center=self.center)
+        # Arrows
+        self.left_surface = self.font.render("< ", True, Button.COLOR)
+        self.left_rect = self.left_surface.get_rect(topright=self.text_rect.topleft)
+        self.right_surface = self.font.render(" >", True, Button.COLOR)
+        self.right_rect = self.right_surface.get_rect(topleft=self.text_rect.topright)
+
+    def update(self) -> None:
+        """ Animates scroll """
+        self.update_surface()
+
+    def render(self, screen: pygame.Surface) -> None:
+        """ Blits button image onto given surface
+        :param screen: pygame.Surface to render button on
+        """
+        screen.blit(self.text_surface, self.text_rect)
+        if self.active:
+            screen.blit(self.left_surface, self.left_rect)
+            screen.blit(self.right_surface, self.right_rect)
+
+    def set_active(self, active:bool = True) -> None:
+        """ Activates or deactivates scroll
+        :param active: True if scroll should be activated """
+        self.active = active
+
+    def handle(self, event: pygame.event.Event) -> None:
+        """ Handles key AD/LeftRight entry change
+        :param event: PyGame event to be handled
+        """
+        if event.type != pygame.KEYDOWN or not self.active:
+            return
+        prev_i = self.i
+        if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+            self.i = (self.i - 1) % len(self.options)
+        if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+            self.i = (self.i + 1) % len(self.options)
+        if prev_i != self.i and self.post_action is not None:
+            self.post_action(self.i)
+
 class ButtonList:
     """ Stores a set of buttons, implements navigation. """
 
@@ -136,6 +209,19 @@ class ButtonList:
         if not self.buttons:
             new_button.set_active()
         self.buttons.append(new_button)
+    
+    def construct_scroll(self, options: list[str], post_action=None):
+        """ Creates and appends new scroll
+        :param options: Displayed button text
+        :param post_action: Function with 1 paramater (number of entry chosen)
+                                                to call after each entry change
+        """
+        width, height = self.buttons[-1].center if self.buttons else self.topmid
+        height += self.h_step if self.buttons else 0
+        new_scroll = Scroll(options, (width, height), post_action)
+        if not self.buttons:
+            new_scroll.set_active()
+        self.buttons.append(new_scroll)
 
     def render(self, screen: pygame.Surface) -> None:
         """ Renders buttons and scrolls
@@ -169,12 +255,15 @@ if __name__ == '__main__':
     pygame.init()
     pygame.font.init()
 
-    screen = pygame.display.set_mode((600, 600))
-
-    buttons = ButtonList((300, 200), 100)
+    screen = pygame.display.set_mode((1200, 600))
+    
+    names = ["AA", "B", "C"]
+    buttons = ButtonList((600, 200), 100)
     buttons.construct_button("Quit", action=exit, keys=[pygame.K_q])
-    buttons.construct_button("Hi", action=lambda:print("Hi"))
-    buttons.construct_button("Chill " * 5)
+    buttons.construct_button("Hi " * 20, action=lambda:print("Hi"))
+    def cool_action(i):
+        buttons.buttons[1].update_text(names[i])
+    buttons.construct_scroll(names, lambda i: buttons.buttons[1].update_text(names[i]))
     clock = pygame.time.Clock()
     finished = False
 

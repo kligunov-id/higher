@@ -69,7 +69,6 @@ class TEXT:
 class MUSIC:
     TITLES = ["Absolute Valentine - In the 42nd Street", "Opening Animal Crossing"]
     DIFFICULTIES = ["Hard", "BROKEN_BEAT"]
-    I = -1
     
     TITLE = None
     PATH = None
@@ -78,12 +77,12 @@ class MUSIC:
     PLAY_ERROR = "!!! Failed to play music !!!"
     
     @staticmethod
-    def next_title() -> None:
-        """ Cyclically changes soundtrack """
-        MUSIC.I = (MUSIC.I + 1) % len(MUSIC.TITLES)
-        MUSIC.TITLE = MUSIC.TITLES[MUSIC.I]
+    def set_title(i: int) -> None:
+        """ Updates meta info about track
+        :param i: New track index"""
+        MUSIC.TITLE = MUSIC.TITLES[i]
         MUSIC.PATH = path.join("resources", "music", MUSIC.TITLE + ".mp3")
         MUSIC.BEAT_PATH = path.join("resources", "beatlines", MUSIC.TITLE + ".txt")
-        TEXT.DIFFICULTY = f"(Difficulty: {MUSIC.DIFFICULTIES[MUSIC.I]})"
+        TEXT.DIFFICULTY = f"(Difficulty: {MUSIC.DIFFICULTIES[i]})"
 
-MUSIC.next_title()
+MUSIC.set_title(0)
