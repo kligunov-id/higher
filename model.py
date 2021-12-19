@@ -1,7 +1,9 @@
-import random, pygame
+import pygame
+from random import choice
 from locals import *
 from chunks import ctype_by_letter
 from spritesheet import SpriteSheet
+import os
 
 """
 Responsible for modeling and rendering of the game field and the player
@@ -68,7 +70,7 @@ class Tower:
         self.cells = []
         self.level = 0  # level of the floor of the tower
         self.loaded_level = 0  # level of the highest loaded cell
-        self.load_chunk('0_0.txt')
+        self.load_chunk(os.path.join('resources', 'chunks', '0_0.txt'))
 
         self.player = Player()
 
@@ -78,27 +80,28 @@ class Tower:
         """
         self.level += amount
 
-    def get_chunk_name(self) -> str:
+    def get_chunk_path(self) -> str:
         """
         Randomly chooses chunk with difficulty based on tower level
-        :return: Chunk file name
+        :return: Chunk file path
         """
-        if self.level <= 20:
-            difficulty = 0
-        elif self.level <= 80:
-            difficulty = 1
+        if self.level <= 40:
+            difficulty = '0'
+        elif self.level <= 120:
+            difficulty = '1'
         else:
-            difficulty = 2
-        number = random.randint(1, 10)
-        return str(difficulty) + "_" + str(number) + ".txt"
+            difficulty = '2'
 
-    def load_chunk(self, chunk_name='') -> None:
+        chunkname = choice(os.listdir(os.path.join('resources', 'chunks', difficulty)))
+        return os.path.join('resources', 'chunks', difficulty, chunkname)
+
+    def load_chunk(self, chunk_path='') -> None:
         """ Loads chunk from a prepared(see chunks.py) file
-        :param chunk_name: optional, use if you want to load a specific chunk by name
+        :param chunk_path: optional, use if you want to load a specific chunk by path
         """
-        if not chunk_name:
-            chunk_name = self.get_chunk_name()
-        dump = open(path.join('resources', 'chunks', chunk_name + '_refactored.txt'), 'r').readlines()
+        if not chunk_path:
+            chunk_path = self.get_chunk_path()
+        dump = open(chunk_path, 'r').readlines()
         dump.reverse()
         newcells = []
         a = int(0.8 * HEIGHT / Tower.HEIGHT)

@@ -69,8 +69,28 @@ class TEXT:
     SELECT_ABILITY = "Select Abilities"
 
 class MUSIC:
-    TITLES = ["Absolute Valentine - In the 42nd Street", "Opening Animal Crossing"]
-    DIFFICULTIES = ["Hard", "BROKEN_BEAT"]
+
+    TITLES = [
+        "In the 42nd Street",
+        "Opening Animal Crossing",
+        "Dont Give a Damn",
+        "Adrenaline Push",
+        "All Out of Love",
+        "U and I",
+        "Moorlands",
+        "My Friends Are Brutal"
+    ]
+    DIFFICULTIES = [
+        "Hard",
+        "BROKEN_BEAT",
+        "Hard",
+        "Hard",
+        "Hard",
+        "Hard",
+        "Hell",
+        "Hard"
+    ]
+    I = -1
     
     TITLE = None
     PATH = None
