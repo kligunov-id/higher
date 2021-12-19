@@ -233,7 +233,8 @@ class MusicSelectionMenu(GameState):
             self.button_list.buttons[0].update_text(MUSIC.TITLE)
 
         self.button_list.construct_scroll(MUSIC.TITLES,
-            post_action=lambda i:MUSIC.set_title(i))
+            post_action=lambda i:MUSIC.set_title(i),
+            starting_i=MUSIC.TITLES.index(MUSIC.TITLE))
         self.button_list.construct_button(TEXT.BACK_MENU,
             action=lambda: Game.switch_to(MainMenu()),
             keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE])
