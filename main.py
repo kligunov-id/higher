@@ -15,7 +15,7 @@ class Settings:
 
     @staticmethod
     def get_instance():
-        """ :return: the only instance of Game """
+        """ :return: the only instance of the class Settings """
         if Settings._instance is None:
             Settings()
         return Settings._instance
