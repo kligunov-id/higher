@@ -1,4 +1,4 @@
-import os
+import os.path
 
 """
 Resposible for converting human-readable chunks into game-readable type
@@ -83,14 +83,15 @@ ctype_by_letter = {
 }
 
 
-def redo_chunk(filename) -> None:
+def redo_chunk(difficulty: str, filename: str) -> None:
     """ Transforms a file that denotes empty tiles by '.', holes by 'H' and walls by 'W' \
         into a file that's readable by the load_chunk function
-    :param filename: name of the file, including the .txt OR 'all' to redo all files in \\resources\\chunks directory
+    :param difficulty: difficulty of the chunk
+    :param filename: name of file, including '.txt', or 'all' to redo all files in the resources/chunks/difficulty directory
     """
-    with open(path.join('resources', 'chunks', filename + '_refactored.txt'), 'w') as f:
-        dump = open(path.join('resources', 'chunks', filename), 'r').readlines()
-        for y, line in enumerate(dump):
+    dump = open(os.path.join('resources', 'chunks', difficulty, filename), 'r').readlines()
+    with open(os.path.join('resources', 'chunks', difficulty, filename), 'w') as f:
+        for y, line in enumerate(dump[:-1]):
             for x, sym in enumerate(line.strip()):
                 if sym == '.':
                     state = -1
@@ -100,26 +101,30 @@ def redo_chunk(filename) -> None:
                     state = -10
                 elif sym == '#':
                     state = 1  # a variable for encoding the state of various neighbours of the cell
+
+                    # encoding neighbours
                     if y != 0 and dump[y - 1][x] == '#': state += 1
                     if x != len(line) - 1 and dump[y][x + 1] == '#': state += 2
                     if y != len(dump) - 1 and dump[y + 1][x] == '#': state += 4
                     if y != len(dump) - 1 and dump[y + 1][x - 1] == '#': state += 8
                     if x != 0 and dump[y][x - 1] == '#': state += 16
-                    if y == 0 and (x == 0 or x == len(line) - 1):
+
+                    # fixing missing neighbours for tiles on the corners of the chunk
+                    if y == 0 and (x == 0 or x == len(line) - 2):
                         state += 1
-                    if y == len(dump) - 1 and (x == 0 or x == len(line) - 1):
+                    if y == len(dump) - 1 and (x == 0 or x == len(line) - 2):
                         state += 4
+
                 letter = letter_by_state[state]
                 f.write(letter)
             f.write('\n')
 
 
 if __name__ == '__main__':
-    chunk_name = input()
+    difficulty = input("difficulty ")
+    chunk_name = input("chunk name or 'all' ")
     if chunk_name == "all":
-        for chunk_name in os.listdir(path.join('resources', 'chunks')):
-            if chunk_name[-5] != 'd':
-                print(chunk_name)
-                redo_chunk(chunk_name)
+        for chunk_name in os.listdir(os.path.join('resources', 'chunks', difficulty)):
+            redo_chunk(difficulty, chunk_name)
     else:
-        redo_chunk(chunk_name)
+        redo_chunk(difficulty, chunk_name)
