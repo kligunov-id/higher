@@ -22,15 +22,17 @@ from spritesheet import SpriteSheet
 
 class Ability(ABC):
     """ Renders ability, tracks it CD and executes it """
+    
+    name = "Void Ability"
 
-    def __init__(self, spritesheet, move_sequence=None, cd: int = 5):
+    def __init__(self, move_sequence=None, cd: int = 5):
         """ Initilizes CD timer, binds ability with the abilitybar
         :param spritesheet: Spritesheet with all abilities
         :param move_sequence: Move function(moves:list[tuple[int, int]]) -> None 
         :param cd: cooldown of the ability
         """
         self.cd_left = 0
-        self.spritesheet = spritesheet
+        self.spritesheet = SpriteSheet('abilitysheet.png')
         self.move_sequence = move_sequence
         self.key = None
         self.CD = cd
@@ -77,7 +79,6 @@ class AbilityBar:
         :param move_sequence: Move function(moves:list[tuple[int, int]]) -> None
         :param pos: ??????????
         """
-        self.spritesheet = SpriteSheet('abilitysheet.png')
         self.move_sequence = move_sequence
         if pos:
             self.x, self.y = pos
@@ -88,10 +89,17 @@ class AbilityBar:
 
     def set_default_abilities(self) -> None:
         """ Fills slots with Knight abilities """
-        self.set_ability(0, KnightLeftUp(self.spritesheet))
-        self.set_ability(1, KnightUpLeft(self.spritesheet))
-        self.set_ability(2, KnightUpRight(self.spritesheet))
-        self.set_ability(3, KnightRightUp(self.spritesheet))
+        self.set_ability(0, KnightLeftUp())
+        self.set_ability(1, KnightUpLeft())
+        self.set_ability(2, KnightUpRight())
+        self.set_ability(3, KnightRightUp())
+
+    def copy_abilities(self, ability_bar) -> None:
+        """ Fills slots with abilities from another ability bar """
+        if ability_bar is None:
+            return
+        for i, ability in enumerate(ability_bar.abilities):
+            self.set_ability(i, ability)
 
     def update(self) -> None:
         """ Updates animation states of abilities """
@@ -101,12 +109,12 @@ class AbilityBar:
     def render(self, screen: pygame.Surface) -> None:
         """ Renders ability sprite
         :param screen: PyGame surface to blit onto """
-        surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        surf = pygame.Surface((self.width, self.height + 50), pygame.SRCALPHA)
         for place, ability in enumerate(self.abilities):
             aimage = ability.render()
             arect = aimage.get_rect(center=self.get_pos(place))
             surf.blit(aimage, arect)
-        screen.blit(surf, surf.get_rect(center=(self.x, self.y)))
+        screen.blit(surf, surf.get_rect(center=(self.x, self.y + 70)))
 
     def handle(self, event: pygame.event.Event) -> None:
         """ Executes abilities when binded keys are pressed """
@@ -121,7 +129,7 @@ class AbilityBar:
         :param place: place of the ability on the abilitybar - from 0 to 3
         :return: pos (x, y) of the center of the ability image
         """
-        return int(self.width / 2), int(self.height / 8 + (self.height / 4) * place)
+        return int(self.width / 2), int(self.height / 8 + (self.height / 4 + 10) * place)
 
     def set_ability(self, slot: int, ability: Ability) -> None:
         """
@@ -140,6 +148,7 @@ class AbilityBar:
 class KnightLeftUp(Ability):
     """ Represents left-top dash """
 
+    name = "Knight Left-Up"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 960
@@ -161,6 +170,7 @@ class KnightLeftUp(Ability):
 class KnightUpLeft(Ability):
     """ Represents top-left dash """
 
+    name = "Knight Up-Left"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 640
@@ -182,6 +192,8 @@ class KnightUpLeft(Ability):
 
 class KnightUpRight(Ability):
     """ Represents top-right dash """
+
+    name = "Knight Up-Right"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 320
@@ -203,6 +215,8 @@ class KnightUpRight(Ability):
 
 class KnightRightUp(Ability):
     """ Represents left-top dash """
+
+    name = "Knight Right-Up"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 0
@@ -224,6 +238,8 @@ class KnightRightUp(Ability):
 
 class RushUp(Ability):
     """ Represents three-steps-up dash """
+
+    name = "Rush Up"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 1280
@@ -245,6 +261,8 @@ class RushUp(Ability):
 
 class Hop(Ability):
     """ Represents a teleport two tiles up """
+
+    name = "Hop"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 1600
@@ -289,7 +307,7 @@ class Mirror(Ability):
 '''
 
 ability_list = [KnightLeftUp, KnightUpLeft, KnightUpRight, KnightRightUp, RushUp, Hop]
-ability_names = ["Knight Left-Up", "Knight Up-Left", "Knight Up-Right", "Knight Right-Up", "Rush Up", "Hop"]
+ability_names = [ability.name for ability in ability_list]
 
 if __name__ == '__main__':
     print("this module is for describing the abilities of the game 'Higher', it's not supposed to be "

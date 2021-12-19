@@ -1,9 +1,24 @@
 from abc import ABC, abstractmethod
-from button import ButtonList
+from button import ButtonList, Button
 from model import Player, Tower
 import beatline
 from abilities import *
 from locals import TEXT, MUSIC
+
+class Settings:
+    """ Singleton class responsible for transferring of settings between different GameStates """
+    _instance = None
+
+    def __init__(self):
+        Settings._instance = self
+        self.ability_bar = AbilityBar(None)
+
+    @staticmethod
+    def get_instance():
+        """ :return: the only instance of Game """
+        if Settings._instance is None:
+            Settings()
+        return Settings._instance
 
 class GameState(ABC):
     """ Abstract class responsible for controlling all game elements:
@@ -71,13 +86,16 @@ class MainMenu(GameState):
         """ Initializes menu with buttons """
         super().__init__()
         
-        self.button_list = ButtonList((WIDTH / 2, 0.4 * HEIGHT), 0.2 * HEIGHT)
+        self.button_list = ButtonList((WIDTH / 2, 0.32 * HEIGHT), 0.18 * HEIGHT)
         # Start button
         self.button_list.construct_button(TEXT.START,
             action=lambda: Game.switch_to(GameSession()))
         # Track selection button
         self.button_list.construct_button(TEXT.SELECT_TRACK,
             action=lambda: Game.switch_to(MusicSelectionMenu()))
+        # Ability selection button
+        self.button_list.construct_button(TEXT.SELECT_ABILITY,
+            action=lambda: Game.switch_to(AbilitySelectionMenu()))
         # Quit button
         self.button_list.construct_button(TEXT.QUIT,
             action=exit,
@@ -167,9 +185,9 @@ class GameSession(GameState):
         self.score = 0
         self.tower = Tower()
         self.beatline = beatline.DrawableLine((WIDTH / 2, HEIGHT * 0.8), WIDTH / 2, MUSIC.BEAT_PATH, 2000)
-        self.abilitybar = AbilityBar(self.tower.move_sequence)
-
-        self.dynamic_elements = [self.beatline, self.abilitybar, self.tower]
+        self.ability_bar = AbilityBar(self.tower.move_sequence)
+        self.ability_bar.copy_abilities(Settings.get_instance().ability_bar)
+        self.dynamic_elements = [self.beatline, self.ability_bar, self.tower]
 
         try:
             pygame.mixer.music.load(MUSIC.PATH)
@@ -234,6 +252,50 @@ class MusicSelectionMenu(GameState):
         screen.blit(text_surface, text_rect)
         
         self.button_list.render(screen)
+
+        return screen
+    
+    def handle(self, event: pygame.event.Event) -> None:
+        """ Handles mouse and keyboard input
+        :param event: PyGame event to be handled
+        """
+        self.button_list.handle(event)
+
+    def update(self) -> None:
+        """ Animates buttons """
+        self.button_list.update()
+
+class AbilitySelectionMenu(GameState):
+    """ Represents ability selection screen accessible from main menu """
+
+    def __init__(self):
+        """ Initializes buttons and font """
+        self.button_list = ButtonList((WIDTH * 0.6, 0.27 * HEIGHT), 0.15 * HEIGHT)
+        self.ability_bar = Settings.get_instance().ability_bar
+        def set_into_slot(k):
+            return lambda i: self.ability_bar.set_ability(k, ability_list[i]())
+        for k in range(4):
+            self.button_list.construct_scroll(ability_names,
+                post_action=set_into_slot(k),
+                starting_i=ability_names.index(self.ability_bar.abilities[k].name))
+
+        self.button_list.add_button(Button(TEXT.BACK_MENU,
+            (WIDTH * 0.6, 0.9 * HEIGHT),
+            action=lambda: Game.switch_to(MainMenu()),
+            keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE]))
+
+        self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
+
+    def render(self) -> pygame.Surface:
+        """ Renders buttons and text """
+        screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        
+        text_surface = self.font.render(TEXT.SELECT_ABILITY_INVITATION, True, Color.WHITE)
+        text_rect = text_surface.get_rect(center=(WIDTH * 0.6, 0.1 * HEIGHT))
+        screen.blit(text_surface, text_rect)
+        
+        self.button_list.render(screen)
+        self.ability_bar.render(screen)
 
         return screen
     

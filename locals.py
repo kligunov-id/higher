@@ -65,6 +65,8 @@ class TEXT:
     SELECT_TRACK_INVITATION = "Choose your soundtrack:"
     SELECT_TRACK = "Select Track"
     DIFFICULTY = ""
+    SELECT_ABILITY_INVITATION = "Select your abilities: "
+    SELECT_ABILITY = "Select Abilities"
 
 class MUSIC:
     TITLES = ["Absolute Valentine - In the 42nd Street", "Opening Animal Crossing"]

@@ -120,17 +120,18 @@ class Scroll:
     FONT_PATH = FONT_PATH
     COLOR = Color.WHITE
 
-    def __init__(self, options: list[str], center: tuple[int, int], post_action=None):
+    def __init__(self, options: list[str], center: tuple[int, int], post_action=None, starting_i: int = 0):
         """ Initializes new button
         :param options: Displayed button text
         :param center: List of coordinates (x, y) of the button text
         :param post_action: Function with 1 paramater (number of entry chosen)
                                                 to call after each entry change
+        :param starting_i: Index of starting entry
         """
         self.options = options
         self.center = center
         self.post_action = post_action
-        self.i = 0
+        self.i = starting_i
         self.active = False
 
     def update_surface(self) -> None:
@@ -210,15 +211,16 @@ class ButtonList:
             new_button.set_active()
         self.buttons.append(new_button)
     
-    def construct_scroll(self, options: list[str], post_action=None):
+    def construct_scroll(self, options: list[str], post_action=None, starting_i: int = 0):
         """ Creates and appends new scroll
         :param options: Displayed button text
         :param post_action: Function with 1 paramater (number of entry chosen)
                                                 to call after each entry change
+        :param starting_i: Index of starting entry
         """
         width, height = self.buttons[-1].center if self.buttons else self.topmid
         height += self.h_step if self.buttons else 0
-        new_scroll = Scroll(options, (width, height), post_action)
+        new_scroll = Scroll(options, (width, height), post_action, starting_i)
         if not self.buttons:
             new_scroll.set_active()
         self.buttons.append(new_scroll)
