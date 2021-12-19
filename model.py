@@ -60,7 +60,7 @@ class Cell:
 
 
 class Tower:
-    """ Stores and loads from file all cells,  """
+    """ Stores and loads from file all cells, stores player """
     WIDTH = 13
     HEIGHT = 15
 
@@ -68,10 +68,11 @@ class Tower:
         """ Initializes tower with data from field.txt file """
         self.spritesheet = SpriteSheet('towersheet.png')
         self.cells = []
-        self.player = Player(self)
         self.level = 0  # level of the floor of the tower
         self.loaded_level = 0  # level of the highest loaded cell
         self.load_chunk(os.path.join('resources', 'chunks', '0_0.txt'))
+
+        self.player = Player()
 
     def move_floor(self, amount=1) -> None:
         """ Moves tower any amount of cells down
@@ -140,14 +141,15 @@ class Tower:
         """Unpacks new chunks when the loaded amount gets too small"""
         if self.loaded_level <= self.level + 20:
             self.load_chunk()
+        self.player.update()
 
     def handle(self, event: pygame.event.Event) -> None:
-        """Handles events, dropping the tower 1 floor every button press
-        :param event: a pygame.Event to be handled
+        """ Handles events, dropping the tower 1 floor every button press
+        :param event: PyGame event to be handled
         """
         if event.type == pygame.KEYDOWN:
-            self.player.handle(event)
             self.move_floor()
+            self.player.handle(self, event)
 
     @staticmethod
     def calc_center(pos: tuple[int, int]) -> tuple[int, int]:
@@ -171,74 +173,89 @@ class Tower:
             for j in range(Tower.WIDTH):
                 pos = (Tower.calc_center((i - level, j))[0] - a / 2, Tower.calc_center((i - level, j))[1] - a / 2)
                 screen.blit(self.cells[i][j].render(), pos)
-        self.player.render(screen)
-
-
-class Player:
-    """Responsible for player movement, rendering"""
-
-    def __init__(self, tower: Tower):
-        """
-        Initializes starting position
-        :param tower: the Tower object inside which the player is located
-        """
-        self.x, self.y = Tower.WIDTH // 2, 3
-        self.tower = tower
-
-    def move(self, pos: tuple[int, int], step: tuple[int, int]) -> tuple[int, int]:
-        """
-        Calculates movement from a given position
-        :param pos: (x,y) of a cell
-        :param step: (dx, dy) of a single movement
-        :return: (x, y) of the cell after the movement
-        """
-        new_x, new_y = pos[0] + step[0], pos[1] + step[1]
-        if self.tower.is_walkable((new_x, new_y)):
-            return new_x, new_y
-        return pos
+        self.player.render(screen, self.level)
 
     def move_sequence(self, *steps) -> None:
         """
         moves the player a sequence of steps
         :param steps: a list of (dx, dy) of movements
         """
+        self.player.move_sequence(self, *steps)
+
+    def is_player_alive(self) -> bool:
+        """ :return: True if player is alive """
+        return self.player.is_alive(self.level)
+
+class Player:
+    """Responsible for player movement, rendering"""
+
+    def __init__(self):
+        """
+        Initializes starting position
+        :param tower: the Tower object inside which the player is located
+        """
+        self.x, self.y = Tower.WIDTH // 2, 3
+
+    def move(self, tower: Tower, pos: tuple[int, int], step: tuple[int, int]) -> tuple[int, int]:
+        """
+        Calculates movement from a given position in a given tower
+        :param tower: Tower inside which the player is moving
+        :param pos: (x,y) of a cell
+        :param step: (dx, dy) of a single movement
+        :return: (x, y) of the cell after the movement
+        """
+        new_x, new_y = pos[0] + step[0], pos[1] + step[1]
+        if tower.is_walkable((new_x, new_y)):
+            return new_x, new_y
+        return pos
+
+    def move_sequence(self, tower: Tower, *steps) -> None:
+        """
+        moves the player a sequence of steps
+        :param tower: Tower inside which the player is moving
+        :param steps: a list of (dx, dy) of movements
+        """
         new_pos = (self.x, self.y)
         for step in steps:
-            new_pos = self.move(new_pos, step)
-            if self.tower.is_empty(new_pos):
+            new_pos = self.move(tower, new_pos, step)
+            if tower.is_empty(new_pos):
                 self.x, self.y = new_pos
 
     def update(self) -> None:
         """ For now player has no animation or progression """
         pass
 
-    def handle(self, event: pygame.event.Event) -> None:
+    def handle(self, tower:Tower, event: pygame.event.Event) -> None:
         """
         Handles WASD movement
+        :param tower: Tower inside which the player is moving
         :param event: Event to be handled, should be of KEYDOWN type
         """
         if event.type != pygame.KEYDOWN:
             return
         if event.key == pygame.K_w:
-            self.move_sequence((0, 1))
+            self.move_sequence(tower, (0, 1))
         elif event.key == pygame.K_s:
-            self.move_sequence((0, -1))
+            self.move_sequence(tower, (0, -1))
         elif event.key == pygame.K_a:
-            self.move_sequence((-1, 0))
+            self.move_sequence(tower, (-1, 0))
         elif event.key == pygame.K_d:
-            self.move_sequence((1, 0))
+            self.move_sequence(tower, (1, 0))
 
-    def render(self, screen: pygame.Surface) -> None:
+    def render(self, screen: pygame.Surface, level: int = 0) -> None:
         """
         renders self onto a screen
         :param screen: pygame surface to blit image on
+        :param level: Level of the tower the player is climbing
         """
         a = 0.8 * HEIGHT / Tower.HEIGHT
-        square(screen, Color.MAGENTA, Tower.calc_center((self.y - self.tower.level, self.x)), a)
+        square(screen, Color.MAGENTA, Tower.calc_center((self.y - level, self.x)), a)
 
-    def is_alive(self) -> bool:
-        """:return: True if player is still visible """
-        return self.y >= self.tower.level
+    def is_alive(self, level: int) -> bool:
+        """
+        :param level: Level of the tower the player is climbing
+        :return: True if player is still visible """
+        return self.y >= level
 
 
 if __name__ == '__main__':

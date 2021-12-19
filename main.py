@@ -1,9 +1,24 @@
 from abc import ABC, abstractmethod
-from button import ButtonList
-import model
+from button import ButtonList, Button
+from model import Player, Tower
 import beatline
 from abilities import *
 from locals import TEXT, MUSIC
+
+class Settings:
+    """ Singleton class responsible for transferring of settings between different GameStates """
+    _instance = None
+
+    def __init__(self):
+        Settings._instance = self
+        self.ability_bar = AbilityBar(None)
+
+    @staticmethod
+    def get_instance():
+        """ :return: the only instance of Game """
+        if Settings._instance is None:
+            Settings()
+        return Settings._instance
 
 class GameState(ABC):
     """ Abstract class responsible for controlling all game elements:
@@ -71,13 +86,16 @@ class MainMenu(GameState):
         """ Initializes menu with buttons """
         super().__init__()
         
-        self.button_list = ButtonList((WIDTH / 2, 0.4 * HEIGHT), 0.2 * HEIGHT)
+        self.button_list = ButtonList((WIDTH / 2, 0.32 * HEIGHT), 0.18 * HEIGHT)
         # Start button
         self.button_list.construct_button(TEXT.START,
             action=lambda: Game.switch_to(GameSession()))
         # Track selection button
         self.button_list.construct_button(TEXT.SELECT_TRACK,
             action=lambda: Game.switch_to(MusicSelectionMenu()))
+        # Ability selection button
+        self.button_list.construct_button(TEXT.SELECT_ABILITY,
+            action=lambda: Game.switch_to(AbilitySelectionMenu()))
         # Quit button
         self.button_list.construct_button(TEXT.QUIT,
             action=exit,
@@ -165,19 +183,11 @@ class GameSession(GameState):
         super().__init__()
 
         self.score = 0
-
-        self.abilitysheet = SpriteSheet('abilitysheet.png')
-
-        self.tower = model.Tower()
-        self.beatline = beatline.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, MUSIC.BEAT_PATH, 2000)
-        self.abilitybar = AbilityBar(self.abilitysheet, self.tower.player)
-
-        self.abilitybar.set_ability(0, KnightLeftUp(self.abilitybar))
-        self.abilitybar.set_ability(1, KnightUpLeft(self.abilitybar))
-        self.abilitybar.set_ability(2, KnightUpRight(self.abilitybar))
-        self.abilitybar.set_ability(3, KnightRightUp(self.abilitybar))
-
-        self.dynamic_elements = [self.beatline, self.abilitybar, self.tower]
+        self.tower = Tower()
+        self.beatline = beatline.DrawableLine((WIDTH / 2, HEIGHT * 0.8), WIDTH / 2, MUSIC.BEAT_PATH, 2000)
+        self.ability_bar = AbilityBar(self.tower.move_sequence)
+        self.ability_bar.copy_abilities(Settings.get_instance().ability_bar)
+        self.dynamic_elements = [self.beatline, self.ability_bar, self.tower]
 
         try:
             pygame.mixer.music.load(MUSIC.PATH)
@@ -203,7 +213,7 @@ class GameSession(GameState):
 
     def update(self):
         """switches to the game over screen if the player is dead"""
-        if not self.tower.player.is_alive():
+        if not self.tower.is_player_alive():
             pygame.mixer.music.stop()
             Game.switch_to(GameOver(self.score))
         for elem in self.dynamic_elements:
@@ -222,7 +232,8 @@ class MusicSelectionMenu(GameState):
             MUSIC.next_title()
             self.button_list.buttons[0].update_text(MUSIC.TITLE)
 
-        self.button_list.construct_button(MUSIC.TITLE, action=next)
+        self.button_list.construct_scroll(MUSIC.TITLES,
+            post_action=lambda i:MUSIC.set_title(i))
         self.button_list.construct_button(TEXT.BACK_MENU,
             action=lambda: Game.switch_to(MainMenu()),
             keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE])
@@ -241,6 +252,50 @@ class MusicSelectionMenu(GameState):
         screen.blit(text_surface, text_rect)
         
         self.button_list.render(screen)
+
+        return screen
+    
+    def handle(self, event: pygame.event.Event) -> None:
+        """ Handles mouse and keyboard input
+        :param event: PyGame event to be handled
+        """
+        self.button_list.handle(event)
+
+    def update(self) -> None:
+        """ Animates buttons """
+        self.button_list.update()
+
+class AbilitySelectionMenu(GameState):
+    """ Represents ability selection screen accessible from main menu """
+
+    def __init__(self):
+        """ Initializes buttons and font """
+        self.button_list = ButtonList((WIDTH * 0.6, 0.27 * HEIGHT), 0.15 * HEIGHT)
+        self.ability_bar = Settings.get_instance().ability_bar
+        def set_into_slot(k):
+            return lambda i: self.ability_bar.set_ability(k, ability_list[i]())
+        for k in range(4):
+            self.button_list.construct_scroll(ability_names,
+                post_action=set_into_slot(k),
+                starting_i=ability_names.index(self.ability_bar.abilities[k].name))
+
+        self.button_list.add_button(Button(TEXT.BACK_MENU,
+            (WIDTH * 0.6, 0.9 * HEIGHT),
+            action=lambda: Game.switch_to(MainMenu()),
+            keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE]))
+
+        self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
+
+    def render(self) -> pygame.Surface:
+        """ Renders buttons and text """
+        screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        
+        text_surface = self.font.render(TEXT.SELECT_ABILITY_INVITATION, True, Color.WHITE)
+        text_rect = text_surface.get_rect(center=(WIDTH * 0.6, 0.1 * HEIGHT))
+        screen.blit(text_surface, text_rect)
+        
+        self.button_list.render(screen)
+        self.ability_bar.render(screen)
 
         return screen
     

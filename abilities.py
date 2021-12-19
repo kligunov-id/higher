@@ -1,5 +1,6 @@
 from model import *
 from abc import ABC
+from spritesheet import SpriteSheet
 
 """
     Stores and renders abilities via AbilityBar
@@ -7,26 +8,33 @@ from abc import ABC
 
     Classes:
 
-        AbilityBar
         Ability
+        AbilityBar
 
         KnightLeftUp, KnightUpLeft, KnightUpRight, KnightRightUp
         RushUp, Hop, Mirror
+
+    Constants:
+
+        ability_names
+        ability_list
 """
 
 class Ability(ABC):
     """ Renders ability, tracks it CD and executes it """
+    
+    name = "Void Ability"
 
-    def __init__(self, abilitybar, cd: int = 5):
+    def __init__(self, move_sequence=None, cd: int = 5):
         """ Initilizes CD timer, binds ability with the abilitybar
-        :param abilitybar: abilitybar to bind the ability with
+        :param spritesheet: Spritesheet with all abilities
+        :param move_sequence: Move function(moves:list[tuple[int, int]]) -> None 
         :param cd: cooldown of the ability
         """
-        self.abilitybar = abilitybar
         self.cd_left = 0
-        self.player = self.abilitybar.player
-        self.spritesheet = self.abilitybar.spritesheet
-        self.KEY = None
+        self.spritesheet = SpriteSheet('abilitysheet.png')
+        self.move_sequence = move_sequence
+        self.key = None
         self.CD = cd
 
     def render(self) -> pygame.Surface:
@@ -43,7 +51,7 @@ class Ability(ABC):
     def handle(self, event: pygame.event.Event) -> None:
         """ Recharges CD and executes ability if ready
         :param event: Event to be handled"""
-        if self.is_active() and self.KEY and event.key == self.KEY:
+        if self.is_active() and self.key and event.key == self.key:
             self.execute()
             self.cd_left = self.CD
         self.cd_left -= 1
@@ -66,18 +74,33 @@ class AbilityBar:
     width = int(height * 0.25)
     x, y = int(WIDTH / 5), int(height / 2)
 
-    def __init__(self, spritesheet, player: Player, pos: tuple[int, int] = None):
+    def __init__(self, move_sequence, pos: tuple[int, int] = None):
+        """ Initializes AbilityBar wiht 4 default abilities and binds move function
+        :param move_sequence: Move function(moves:list[tuple[int, int]]) -> None
+        :param pos: ??????????
         """
-        initiates AbilityBar with void abilities
-        hardcoded to have exactly 4
-        """
-        self.player = player
-        self.spritesheet = spritesheet
+        self.move_sequence = move_sequence
         if pos:
             self.x, self.y = pos
             self.height = self.y * 2
             self.width = int(self.height / 4)
-        self.abilities = [Ability(self), Ability(self), Ability(self), Ability(self)]
+        self.abilities = [None] * 4
+        self.set_default_abilities()
+
+    def set_default_abilities(self) -> None:
+        """ Fills slots with Knight abilities """
+        self.set_ability(0, KnightLeftUp())
+        self.set_ability(1, KnightUpLeft())
+        self.set_ability(2, KnightUpRight())
+        self.set_ability(3, KnightRightUp())
+
+    def copy_abilities(self, ability_bar) -> None:
+        """ Fills slots with abilities from another ability bar """
+        if ability_bar is None:
+            return
+        for i, ability in enumerate(ability_bar.abilities):
+            self.set_ability(i,
+                ability_list[ability_names.index(ability.name)]())
 
     def update(self) -> None:
         """ Updates animation states of abilities """
@@ -87,12 +110,12 @@ class AbilityBar:
     def render(self, screen: pygame.Surface) -> None:
         """ Renders ability sprite
         :param screen: PyGame surface to blit onto """
-        surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        surf = pygame.Surface((self.width, self.height + 50), pygame.SRCALPHA)
         for place, ability in enumerate(self.abilities):
             aimage = ability.render()
             arect = aimage.get_rect(center=self.get_pos(place))
             surf.blit(aimage, arect)
-        screen.blit(surf, surf.get_rect(center=(self.x, self.y)))
+        screen.blit(surf, surf.get_rect(center=(self.x, self.y + 70)))
 
     def handle(self, event: pygame.event.Event) -> None:
         """ Executes abilities when binded keys are pressed """
@@ -107,22 +130,26 @@ class AbilityBar:
         :param place: place of the ability on the abilitybar - from 0 to 3
         :return: pos (x, y) of the center of the ability image
         """
-        return int(self.width / 2), int(self.height / 8 + self.height / 4 * place)
+        return int(self.width / 2), int(self.height / 8 + (self.height / 4 + 10) * place)
 
-    def set_ability(self, place: int, ability: Ability) -> None:
+    def set_ability(self, slot: int, ability: Ability) -> None:
         """
-        sets an ability onto itself
-        :param place: the place of the ability on the ability bar, value between 0 and 3
+        Places ability into the slot
+        :param slot: the place of the ability on the ability bar, value between 0 and 3
         :param ability: the ability, created, but not constructed
-        :return: None
         """
-        ability.KEY = self.keys[place]
-        self.abilities[place] = ability
+        ability.key = self.keys[slot]
+        ability.move_sequence = self.move_sequence
+        self.abilities[slot] = ability
+
+        for i, frame in enumerate(ability.frames):
+            ability.frames[i] = pygame.transform.scale(frame, (self.width, self.width))
 
 
 class KnightLeftUp(Ability):
     """ Represents left-top dash """
 
+    name = "Knight Left-Up"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 960
@@ -131,12 +158,10 @@ class KnightLeftUp(Ability):
         """ Initilizes the ability"""
         super().__init__(*args)
         self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
-        for i, frame in enumerate(self.frames):
-            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move_sequence((-1, 0), (-1, 0), (0, 1))
+        self.move_sequence((-1, 0), (-1, 0), (0, 1))
 
     def render(self) -> pygame.Surface:
         """:return: surface with the ability image rendered on it """
@@ -146,6 +171,7 @@ class KnightLeftUp(Ability):
 class KnightUpLeft(Ability):
     """ Represents top-left dash """
 
+    name = "Knight Up-Left"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 640
@@ -154,12 +180,10 @@ class KnightUpLeft(Ability):
         """ Initilizes the ability"""
         super().__init__(*args)
         self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
-        for i, frame in enumerate(self.frames):
-            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move_sequence((0, 1), (0, 1), (-1, 0))
+        self.move_sequence((0, 1), (0, 1), (-1, 0))
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
@@ -169,6 +193,8 @@ class KnightUpLeft(Ability):
 
 class KnightUpRight(Ability):
     """ Represents top-right dash """
+
+    name = "Knight Up-Right"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 320
@@ -177,12 +203,10 @@ class KnightUpRight(Ability):
         """ Initilizes the ability"""
         super().__init__(*args)
         self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
-        for i, frame in enumerate(self.frames):
-            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move_sequence((0, 1), (0, 1), (1, 0))
+        self.move_sequence((0, 1), (0, 1), (1, 0))
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
@@ -192,6 +216,8 @@ class KnightUpRight(Ability):
 
 class KnightRightUp(Ability):
     """ Represents left-top dash """
+
+    name = "Knight Right-Up"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 0
@@ -200,12 +226,10 @@ class KnightRightUp(Ability):
         """ Initilizes the ability"""
         super().__init__(*args)
         self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
-        for i, frame in enumerate(self.frames):
-            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """ Teleports to the left and top """
-        self.player.move_sequence((1, 0), (1, 0), (0, 1))
+        self.move_sequence((1, 0), (1, 0), (0, 1))
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
@@ -215,6 +239,8 @@ class KnightRightUp(Ability):
 
 class RushUp(Ability):
     """ Represents three-steps-up dash """
+
+    name = "Rush Up"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 1280
@@ -223,12 +249,10 @@ class RushUp(Ability):
         """ Initilizes the ability"""
         super().__init__(*args)
         self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
-        for i, frame in enumerate(self.frames):
-            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """"""
-        self.player.move_sequence((0, 1), (0, 1), (0, 1))
+        self.move_sequence((0, 1), (0, 1), (0, 1))
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
@@ -238,6 +262,8 @@ class RushUp(Ability):
 
 class Hop(Ability):
     """ Represents a teleport two tiles up """
+
+    name = "Hop"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
     cordsy = 1600
@@ -246,19 +272,17 @@ class Hop(Ability):
         """ Initilizes the ability"""
         super().__init__(*args)
         self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
-        for i, frame in enumerate(self.frames):
-            self.frames[i] = pygame.transform.scale(frame, (self.abilitybar.width, self.abilitybar.width))
 
     def execute(self) -> None:
         """"""
-        self.player.move_sequence((0, 2))
+        self.move_sequence((0, 2))
 
     def render(self) -> pygame.Surface:
         """ Displays current CD
         :return: surface with the ability image rendered on it """
         return self.frames[self.cd_left]
 
-
+'''
 class Mirror(Ability):
     """ Mirrors the player's X position """
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
@@ -281,7 +305,10 @@ class Mirror(Ability):
         """ Displays current CD
         :return: surface with the ability image rendered on it """
         return self.frames[self.cd_left]
+'''
 
+ability_list = [KnightLeftUp, KnightUpLeft, KnightUpRight, KnightRightUp, RushUp, Hop]
+ability_names = [ability.name for ability in ability_list]
 
 if __name__ == '__main__':
     print("this module is for describing the abilities of the game 'Higher', it's not supposed to be "

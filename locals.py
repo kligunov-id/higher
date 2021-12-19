@@ -65,8 +65,11 @@ class TEXT:
     SELECT_TRACK_INVITATION = "Choose your soundtrack:"
     SELECT_TRACK = "Select Track"
     DIFFICULTY = ""
+    SELECT_ABILITY_INVITATION = "Select your abilities: "
+    SELECT_ABILITY = "Select Abilities"
 
 class MUSIC:
+ 
     TITLES = [
         "In the 42nd Street",
         "Opening Animal Crossing",
@@ -96,12 +99,12 @@ class MUSIC:
     PLAY_ERROR = "!!! Failed to play music !!!"
     
     @staticmethod
-    def next_title() -> None:
-        """ Cyclically changes soundtrack """
-        MUSIC.I = (MUSIC.I + 1) % len(MUSIC.TITLES)
-        MUSIC.TITLE = MUSIC.TITLES[MUSIC.I]
+    def set_title(i: int) -> None:
+        """ Updates meta info about track
+        :param i: New track index"""
+        MUSIC.TITLE = MUSIC.TITLES[i]
         MUSIC.PATH = path.join("resources", "music", MUSIC.TITLE + ".mp3")
         MUSIC.BEAT_PATH = path.join("resources", "beatlines", MUSIC.TITLE + ".txt")
-        TEXT.DIFFICULTY = f"(Difficulty: {MUSIC.DIFFICULTIES[MUSIC.I]})"
+        TEXT.DIFFICULTY = f"(Difficulty: {MUSIC.DIFFICULTIES[i]})"
 
-MUSIC.next_title()
+MUSIC.set_title(0)
