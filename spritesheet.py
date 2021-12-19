@@ -1,5 +1,6 @@
 import pygame
 from os import path
+from locals import WIDTH, HEIGHT
 
 """ 
 Implements SpriteSheet
@@ -8,6 +9,9 @@ Classes:
 
     SpriteSheet
 """
+
+pygame.init()
+pygame.display.set_mode((WIDTH, HEIGHT))
 
 class SpriteSheet:
     

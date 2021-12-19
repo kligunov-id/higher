@@ -1,9 +1,10 @@
+import pygame
 from abc import ABC, abstractmethod
 from button import ButtonList, Button
 from model import Player, Tower
 import beatline
-from abilities import *
-from locals import TEXT, MUSIC
+from abilities import ability_list, ability_names, AbilityBar
+from locals import *
 
 class Settings:
     """ Singleton class responsible for transferring of settings between different GameStates """
