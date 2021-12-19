@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from button import ButtonList
-import model
+from model import Player, Tower
 import beatline
 from abilities import *
 from locals import TEXT, MUSIC
@@ -165,17 +165,9 @@ class GameSession(GameState):
         super().__init__()
 
         self.score = 0
-
-        self.abilitysheet = SpriteSheet('abilitysheet.png')
-
-        self.tower = model.Tower()
-        self.beatline = beatline.DrawableLine((WIDTH/2, HEIGHT * 0.8), WIDTH/2, MUSIC.BEAT_PATH, 2000)
-        self.abilitybar = AbilityBar(self.abilitysheet, self.tower.player)
-
-        self.abilitybar.set_ability(0, KnightLeftUp(self.abilitybar))
-        self.abilitybar.set_ability(1, KnightUpLeft(self.abilitybar))
-        self.abilitybar.set_ability(2, KnightUpRight(self.abilitybar))
-        self.abilitybar.set_ability(3, KnightRightUp(self.abilitybar))
+        self.tower = Tower()
+        self.beatline = beatline.DrawableLine((WIDTH / 2, HEIGHT * 0.8), WIDTH / 2, MUSIC.BEAT_PATH, 2000)
+        self.abilitybar = AbilityBar(self.tower.move_sequence)
 
         self.dynamic_elements = [self.beatline, self.abilitybar, self.tower]
 
@@ -203,7 +195,7 @@ class GameSession(GameState):
 
     def update(self):
         """switches to the game over screen if the player is dead"""
-        if not self.tower.player.is_alive():
+        if not self.tower.is_player_alive():
             pygame.mixer.music.stop()
             Game.switch_to(GameOver(self.score))
         for elem in self.dynamic_elements:
