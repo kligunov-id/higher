@@ -99,7 +99,8 @@ class AbilityBar:
         if ability_bar is None:
             return
         for i, ability in enumerate(ability_bar.abilities):
-            self.set_ability(i, ability)
+            self.set_ability(i,
+                ability_list[ability_names.index(ability.name)]())
 
     def update(self) -> None:
         """ Updates animation states of abilities """
