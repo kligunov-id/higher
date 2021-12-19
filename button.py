@@ -116,7 +116,8 @@ class Scroll:
     right_surface: pygame.Surface
     right_rect: Rect
 
-    FONTSIZE = 60
+    FONTSIZE_SMALL = 60
+    FONTSIZE_BIG = 64
     FONT_PATH = FONT_PATH
     COLOR = Color.WHITE
 
@@ -133,21 +134,40 @@ class Scroll:
         self.post_action = post_action
         self.i = starting_i
         self.active = False
+        self.size_left = Scroll.FONTSIZE_SMALL
+        self.size_right = Scroll.FONTSIZE_SMALL
+        self.update_surface()
 
     def update_surface(self) -> None:
         """ Redraws scroll, arrows and recalculates hitbox """
-        self.font = pygame.font.Font(Scroll.FONT_PATH, Scroll.FONTSIZE)
+        font = pygame.font.Font(Scroll.FONT_PATH, Scroll.FONTSIZE_SMALL)
+        font_left = pygame.font.Font(Scroll.FONT_PATH, self.size_left)
+        font_right = pygame.font.Font(Scroll.FONT_PATH, self.size_right)
         # Text
-        self.text_surface = self.font.render(trim(self.options[self.i]), True, Button.COLOR)
+        self.text_surface = font.render(trim(self.options[self.i]), True, Button.COLOR)
         self.text_rect = self.text_surface.get_rect(center=self.center)
         # Arrows
-        self.left_surface = self.font.render("< ", True, Button.COLOR)
-        self.left_rect = self.left_surface.get_rect(topright=self.text_rect.topleft)
-        self.right_surface = self.font.render(" >", True, Button.COLOR)
-        self.right_rect = self.right_surface.get_rect(topleft=self.text_rect.topright)
+        self.left_surface = font_left.render(" < ", True, Button.COLOR)
+        self.left_rect = self.left_surface.get_rect(midright=self.text_rect.midleft)
+        self.right_surface = font_right.render(" > ", True, Button.COLOR)
+        self.right_rect = self.right_surface.get_rect(midleft=self.text_rect.midright)
 
     def update(self) -> None:
         """ Animates scroll """
+        # Increases fontsize when mouse is hovering
+        if self.is_mouse_on_left():
+            self.size_left += 1
+        else:
+            self.size_left -= 1
+        if self.is_mouse_on_right():
+            self.size_right += 1
+        else:
+            self.size_right -= 1
+        # Makes sure fontsizes are in range [FONTSIZE_SMALL, FONTSIZE_BIG]
+        self.size_left = max(Button.FONTSIZE_SMALL, self.size_left)
+        self.size_left = min(Button.FONTSIZE_BIG, self.size_left)
+        self.size_right = max(Button.FONTSIZE_SMALL, self.size_right)
+        self.size_right = min(Button.FONTSIZE_BIG, self.size_right)
         self.update_surface()
 
     def render(self, screen: pygame.Surface) -> None:
@@ -155,7 +175,7 @@ class Scroll:
         :param screen: pygame.Surface to render button on
         """
         screen.blit(self.text_surface, self.text_rect)
-        if self.active:
+        if self.active or self.is_mouse_on():
             screen.blit(self.left_surface, self.left_rect)
             screen.blit(self.right_surface, self.right_rect)
 
@@ -168,15 +188,35 @@ class Scroll:
         """ Handles key AD/LeftRight entry change
         :param event: PyGame event to be handled
         """
-        if event.type != pygame.KEYDOWN or not self.active:
-            return
         prev_i = self.i
-        if event.key == pygame.K_a or event.key == pygame.K_LEFT:
-            self.i = (self.i - 1) % len(self.options)
-        if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
-            self.i = (self.i + 1) % len(self.options)
+
+        if event.type == pygame.KEYDOWN and self.active:
+            if event.key == pygame.K_a or event.key == pygame.K_LEFT:
+                self.i = (self.i - 1) % len(self.options)
+            if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
+                self.i = (self.i + 1) % len(self.options)
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.is_mouse_on_left():
+                self.i = (self.i - 1) % len(self.options)
+            if self.is_mouse_on_right():
+                self.i = (self.i + 1) % len(self.options)
+
         if prev_i != self.i and self.post_action is not None:
             self.post_action(self.i)
+
+    def is_mouse_on_left(self) -> bool:
+        """ :return: True if mouse is hovering over the left arrow """
+        return self.left_rect.collidepoint(pygame.mouse.get_pos()) 
+    
+    def is_mouse_on_right(self) -> bool:
+        """ :return: True if mouse is hovering over the right arrow """
+        return self.right_rect.collidepoint(pygame.mouse.get_pos())
+
+    def is_mouse_on(self) -> bool:
+        """ :return: True if mouse is hovering over the scroll"""
+        return (self.text_rect.collidepoint(pygame.mouse.get_pos()) 
+            or self.is_mouse_on_left() or self.is_mouse_on_right())
 
 class ButtonList:
     """ Stores a set of buttons, implements navigation. """
