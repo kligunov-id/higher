@@ -184,9 +184,9 @@ class GameSession(GameState):
 
         self.score = 0
         self.tower = Tower()
-        self.beatline = beatline.DrawableLine((WIDTH / 2, HEIGHT * 0.8), WIDTH / 2, MUSIC.BEAT_PATH, 2000)
         self.ability_bar = AbilityBar(self.tower.move_sequence)
         self.ability_bar.copy_abilities(Settings.get_instance().ability_bar)
+        self.beatline = beatline.DrawableLine((WIDTH / 2, HEIGHT * 0.8), WIDTH / 2, MUSIC.BEAT_PATH, 2000)
         self.dynamic_elements = [self.beatline, self.ability_bar, self.tower]
 
         try:
