@@ -181,7 +181,8 @@ class Tower:
             for j in range(Tower.WIDTH):
                 pos = (Tower.calc_center((i - self.level, j))[0] - self.cell_length / 2,
                        Tower.calc_center((i - self.level, j))[1] - self.cell_length / 2)
-                surf.blit(self.cells[i][j].render(), pos)
+                if self.cells and len(self.cells) > i and len(self.cells[i]) > j:
+                    surf.blit(self.cells[i][j].render(), pos)
         self.player.render(surf, self.level)
         screen.blit(surf, surf.get_rect(center = (WIDTH/2, 0.4 * HEIGHT)))
 

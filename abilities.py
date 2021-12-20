@@ -1,4 +1,5 @@
-from model import *
+import pygame
+from locals import *
 from abc import ABC
 from spritesheet import SpriteSheet
 
@@ -16,14 +17,22 @@ from spritesheet import SpriteSheet
 
     Constants:
 
-        ability_names
-        ability_list
+        ability_names: list[str]
+        ability_list: list[Ability]
+        spritesheet: SpriteSheet
+        sprite_size: int
 """
+
+spritesheet = SpriteSheet('abilitysheet.png')
+sprite_size = 68
 
 class Ability(ABC):
     """ Renders ability, tracks it CD and executes it """
     
     name = "Void Ability"
+    # Coordinates of the upper-left corner of the first frame of animation on the spritesheet
+    cordsx = 0
+    cordsy = 0
 
     def __init__(self, move_sequence=None, cd: int = 5):
         """ Initilizes CD timer, binds ability with the abilitybar
@@ -32,17 +41,14 @@ class Ability(ABC):
         :param cd: cooldown of the ability
         """
         self.cd_left = 0
-        self.spritesheet = SpriteSheet('abilitysheet.png')
         self.move_sequence = move_sequence
         self.key = None
         self.CD = cd
+        self.frames = spritesheet.load_strip((self.cordsx, self.cordsy, sprite_size, sprite_size), 6, Color.WHITE)
 
     def render(self) -> pygame.Surface:
-        """
-        renders the ability.
-        :return: surface with the ability text rendered on it
-        """
-        pass
+        """:return: surface with the ability image rendered on it """
+        return self.frames[self.cd_left]
 
     def update(self) -> None:
         """ For now abilities have now animation or progression """
@@ -72,7 +78,7 @@ class AbilityBar:
     keys = [pygame.K_h, pygame.K_j, pygame.K_k, pygame.K_l]
     height = int(HEIGHT * 0.8)
     width = int(height * 0.25)
-    x, y = int(WIDTH / 5), int(height / 2)
+    x, y = int(WIDTH * 0.15), int(height / 2)
 
     def __init__(self, move_sequence, pos: tuple[int, int] = None):
         """ Initializes AbilityBar wiht 4 default abilities and binds move function
@@ -152,20 +158,15 @@ class KnightLeftUp(Ability):
     name = "Knight Left-Up"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
-    cordsy = 960
+    cordsy = 3 * sprite_size
 
     def __init__(self, *args):
         """ Initilizes the ability"""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
 
     def execute(self) -> None:
         """ Teleports to the left and top """
         self.move_sequence((-1, 0), (-1, 0), (0, 1))
-
-    def render(self) -> pygame.Surface:
-        """:return: surface with the ability image rendered on it """
-        return self.frames[self.cd_left]
 
 
 class KnightUpLeft(Ability):
@@ -174,21 +175,15 @@ class KnightUpLeft(Ability):
     name = "Knight Up-Left"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
-    cordsy = 640
+    cordsy = 2 * sprite_size
 
     def __init__(self, *args):
         """ Initilizes the ability"""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
 
     def execute(self) -> None:
         """ Teleports to the left and top """
         self.move_sequence((0, 1), (0, 1), (-1, 0))
-
-    def render(self) -> pygame.Surface:
-        """ Displays current CD
-        :return: surface with the ability text rendered on it """
-        return self.frames[self.cd_left]
 
 
 class KnightUpRight(Ability):
@@ -197,21 +192,15 @@ class KnightUpRight(Ability):
     name = "Knight Up-Right"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
-    cordsy = 320
+    cordsy = sprite_size
 
     def __init__(self, *args):
         """ Initilizes the ability"""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
 
     def execute(self) -> None:
         """ Teleports to the left and top """
         self.move_sequence((0, 1), (0, 1), (1, 0))
-
-    def render(self) -> pygame.Surface:
-        """ Displays current CD
-        :return: surface with the ability image rendered on it """
-        return self.frames[self.cd_left]
 
 
 class KnightRightUp(Ability):
@@ -225,16 +214,10 @@ class KnightRightUp(Ability):
     def __init__(self, *args):
         """ Initilizes the ability"""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
 
     def execute(self) -> None:
         """ Teleports to the left and top """
         self.move_sequence((1, 0), (1, 0), (0, 1))
-
-    def render(self) -> pygame.Surface:
-        """ Displays current CD
-        :return: surface with the ability image rendered on it """
-        return self.frames[self.cd_left]
 
 
 class RushUp(Ability):
@@ -243,21 +226,15 @@ class RushUp(Ability):
     name = "Rush Up"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
-    cordsy = 1280
+    cordsy = 4 * sprite_size
 
     def __init__(self, *args):
         """ Initilizes the ability"""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
 
     def execute(self) -> None:
         """"""
         self.move_sequence((0, 1), (0, 1), (0, 1))
-
-    def render(self) -> pygame.Surface:
-        """ Displays current CD
-        :return: surface with the ability image rendered on it """
-        return self.frames[self.cd_left]
 
 
 class Hop(Ability):
@@ -266,21 +243,15 @@ class Hop(Ability):
     name = "Hop"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
-    cordsy = 1600
+    cordsy = 5 * sprite_size
 
     def __init__(self, *args):
         """ Initilizes the ability"""
         super().__init__(*args)
-        self.frames = self.spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
 
     def execute(self) -> None:
         """"""
         self.move_sequence((0, 2))
-
-    def render(self) -> pygame.Surface:
-        """ Displays current CD
-        :return: surface with the ability image rendered on it """
-        return self.frames[self.cd_left]
 
 '''
 class Mirror(Ability):
