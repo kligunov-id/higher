@@ -20,9 +20,11 @@ from spritesheet import SpriteSheet
         ability_names: list[str]
         ability_list: list[Ability]
         spritesheet: SpriteSheet
+        sprite_size: int
 """
 
 spritesheet = SpriteSheet('abilitysheet.png')
+sprite_size = 68
 
 class Ability(ABC):
     """ Renders ability, tracks it CD and executes it """
@@ -42,7 +44,7 @@ class Ability(ABC):
         self.move_sequence = move_sequence
         self.key = None
         self.CD = cd
-        self.frames = spritesheet.load_strip((self.cordsx, self.cordsy, 320, 320), 6, Color.WHITE)
+        self.frames = spritesheet.load_strip((self.cordsx, self.cordsy, sprite_size, sprite_size), 6, Color.WHITE)
 
     def render(self) -> pygame.Surface:
         """:return: surface with the ability image rendered on it """
@@ -156,7 +158,7 @@ class KnightLeftUp(Ability):
     name = "Knight Left-Up"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
-    cordsy = 960
+    cordsy = 3 * sprite_size
 
     def __init__(self, *args):
         """ Initilizes the ability"""
@@ -173,7 +175,7 @@ class KnightUpLeft(Ability):
     name = "Knight Up-Left"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
-    cordsy = 640
+    cordsy = 2 * sprite_size
 
     def __init__(self, *args):
         """ Initilizes the ability"""
@@ -190,7 +192,7 @@ class KnightUpRight(Ability):
     name = "Knight Up-Right"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
-    cordsy = 320
+    cordsy = sprite_size
 
     def __init__(self, *args):
         """ Initilizes the ability"""
@@ -224,7 +226,7 @@ class RushUp(Ability):
     name = "Rush Up"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
-    cordsy = 1280
+    cordsy = 4 * sprite_size
 
     def __init__(self, *args):
         """ Initilizes the ability"""
@@ -241,7 +243,7 @@ class Hop(Ability):
     name = "Hop"
     # coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
-    cordsy = 1600
+    cordsy = 5 * sprite_size
 
     def __init__(self, *args):
         """ Initilizes the ability"""
