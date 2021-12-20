@@ -1,7 +1,6 @@
 import pygame
 import os.path
 
-
 """
     Is responisble for beatline.
     Unpacks beats from premade files and animates them
@@ -13,6 +12,7 @@ import os.path
         Beat, DrawableBeat
 """
 
+
 class Line:
     """
     Class containing the data of the music line
@@ -23,7 +23,7 @@ class Line:
         """
         :param pos: the position (x, y) of the center of the line
         :param width: the width of the line
-        :param beat_file_path: the path of the file that the line will extract beat data from
+        :param file_path: the path of the file that the line will extract beat data from
         :param timeloop: the amount of milliseconds the beats will be visible on the line
         """
         self.birthtime = pygame.time.get_ticks()
@@ -209,7 +209,7 @@ class DrawableBeat(Beat):
         self.active_rect = self.active_image.get_rect()
         self.background_rect = self.background_image.get_rect()
 
-    def render(self, screen:pygame.Surface) -> None:
+    def render(self, screen: pygame.Surface) -> None:
         """ Draws beat with animation
         :param screen: PyGame surface to blit onto 
         """
