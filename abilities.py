@@ -78,7 +78,7 @@ class AbilityBar:
     keys = [pygame.K_h, pygame.K_j, pygame.K_k, pygame.K_l]
     height = int(HEIGHT * 0.8)
     width = int(height * 0.25)
-    x, y = int(WIDTH / 5), int(height / 2)
+    x, y = int(WIDTH * 0.15), int(height / 2)
 
     def __init__(self, move_sequence, pos: tuple[int, int] = None):
         """ Initializes AbilityBar wiht 4 default abilities and binds move function
