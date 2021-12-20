@@ -1,6 +1,7 @@
 import pygame
 from os import path
 from locals import WIDTH, HEIGHT
+from typing import Union
 
 """ 
 Implements SpriteSheet
@@ -44,7 +45,7 @@ class SpriteSheet:
         return image
 
     def images_at(self,
-                  rects: list[pygame.Rect] | list[tuple[int, int, int, int]],
+                  rects: Union[list[pygame.Rect], list[tuple[int, int, int, int]]],
                   colorkey=None) -> list[pygame.Surface]:
         """
         Load a whole bunch of images and return them as a list.
@@ -55,7 +56,7 @@ class SpriteSheet:
         return [self.image_at(rect, colorkey) for rect in rects]
 
     def load_strip(self,
-                   rect: pygame.Rect | tuple[int, int, int, int],
+                   rect: Union[pygame.Rect, tuple[int, int, int, int]],
                    image_count: int,
                    colorkey=None) -> list[pygame.Surface]:
         """
