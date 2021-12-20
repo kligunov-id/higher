@@ -13,24 +13,9 @@ Classes:
     Cell
     Tower
     Player
+    PlayerArtist
     
-Functions:
-    
-    square(screen, color, center, a) -> None
-
 """
-
-
-def square(screen: pygame.Surface, color: tuple[int, int, int], center: tuple[int, int], a: int) -> None:
-    """ Blits square and its border with given parameters onto given surface
-    :param  screen: PyGame surface to blit square onto
-    :param color: Color (R, G, B) of the square
-    :param center: List (x, y) of the square's center
-    :param a: Side length
-    """
-    x, y = center
-    pygame.draw.rect(screen, color, (x - a / 2, y - a / 2, a, a))
-    pygame.draw.rect(screen, Color.CITRINE, (x - a / 2, y - a / 2, a, a), 1)
 
 
 class Cell:
@@ -70,11 +55,11 @@ class Tower:
         self.spritesheet = SpriteSheet('towersheet.png')
         self.cells = []
         self.level = 0  # level of the floor of the tower
-        self.target_level = 0 # level at which the tower should be when the animation is finished
+        self.target_level = 0  # level at which the tower should be when the animation is finished
         self.loaded_level = 0  # level of the highest loaded cell
         self.progress = 0  # an amount from 0 to animtime, how much the tower has progressed in animation
         self.load_chunk(os.path.join('resources', 'chunks', '0_0.txt'))
-        self.cell_length = 0.8*HEIGHT/Tower.HEIGHT
+        self.cell_length = 0.8 * HEIGHT / Tower.HEIGHT
         self.player = Player((self.cell_length, self.cell_length))
 
     def move_floor(self, amount=1) -> None:
@@ -111,7 +96,8 @@ class Tower:
         for n, line in enumerate(dump):
             newcells.append([])
             for sym in line.strip():
-                newcells[n].append(Cell((a, a), ctype_by_letter[sym][0], self.spritesheet.image_at(ctype_by_letter[sym][1])))
+                newcells[n].append(
+                    Cell((a, a), ctype_by_letter[sym][0], self.spritesheet.image_at(ctype_by_letter[sym][1])))
         self.cells = self.cells + newcells
         self.loaded_level += len(dump)
 
@@ -147,8 +133,8 @@ class Tower:
         if self.loaded_level <= self.level + 20:
             self.load_chunk()
         if self.level != self.target_level:
-            self.level += (self.target_level-self.level)/(self.animtime-self.progress)
-            self.progress +=1
+            self.level += (self.target_level - self.level) / (self.animtime - self.progress)
+            self.progress += 1
             if self.progress == self.animtime:
                 self.progress = 0
         self.player.update()
@@ -168,7 +154,7 @@ class Tower:
         """
         y, x = pos
         a = 0.8 * HEIGHT / Tower.HEIGHT
-        return (x+1/2) * a, 0.8*HEIGHT - (y+1/2) * a
+        return (x + 1 / 2) * a, 0.8 * HEIGHT - (y + 1 / 2) * a
 
     def render(self, screen: pygame.Surface) -> None:
         """
@@ -177,14 +163,14 @@ class Tower:
         """
         level = int(self.level)
         surf = pygame.Surface((self.cell_length * self.WIDTH, self.cell_length * self.HEIGHT))
-        for i in range(level-1, level + Tower.HEIGHT+1):
+        for i in range(level - 1, level + Tower.HEIGHT + 1):
             for j in range(Tower.WIDTH):
                 pos = (Tower.calc_center((i - self.level, j))[0] - self.cell_length / 2,
                        Tower.calc_center((i - self.level, j))[1] - self.cell_length / 2)
                 if self.cells and len(self.cells) > i and len(self.cells[i]) > j:
                     surf.blit(self.cells[i][j].render(), pos)
         self.player.render(surf, self.level)
-        screen.blit(surf, surf.get_rect(center = (WIDTH/2, 0.4 * HEIGHT)))
+        screen.blit(surf, surf.get_rect(center=(WIDTH / 2, 0.4 * HEIGHT)))
 
     def move_sequence(self, *steps) -> None:
         """
@@ -210,7 +196,8 @@ class Player:
         self.size = size
         self.player_artist = PlayerArtist(self)
 
-    def move(self, tower: Tower, pos: tuple[int, int], step: tuple[int, int]) -> tuple[int, int]:
+    @staticmethod
+    def calc_new_pos(tower: Tower, pos: tuple[int, int], step: tuple[int, int]) -> tuple[int, int]:
         """
         Calculates movement from a given position in a given tower
         :param tower: Tower inside which the player is moving
@@ -231,17 +218,16 @@ class Player:
         """
         new_pos = (self.x, self.y)
         for step in steps:
-            new_pos = self.move(tower, new_pos, step)
+            new_pos = self.calc_new_pos(tower, new_pos, step)
             if tower.is_empty(new_pos):
                 self.x, self.y = new_pos
                 self.player_artist.add_to_queue(new_pos)
-
 
     def update(self) -> None:
         """ Updates the player animation via the PlayerArtist class"""
         self.player_artist.update()
 
-    def handle(self, tower:Tower, event: pygame.event.Event) -> None:
+    def handle(self, tower: Tower, event: pygame.event.Event) -> None:
         """
         Handles WASD movement
         :param tower: Tower inside which the player is moving
@@ -262,6 +248,7 @@ class Player:
         """
         renders self onto a screen
         :param screen: pygame surface to blit image on
+        :param level: the level of the tower
         """
         self.player_artist.render(screen, level)
 
@@ -272,16 +259,15 @@ class Player:
         return self.y >= level
 
 
-class PlayerArtist():
-
-    animtime = 4 # the amount of frames the movement animation takes
+class PlayerArtist:
+    animtime = 4  # the amount of frames the movement animation takes
 
     def __init__(self, player):
         self.player = player
         self.pos = (player.x, player.y)
         self.progress = 0
         self.queue = []
-        self.celllength = 0.8*HEIGHT/Tower.HEIGHT
+        self.celllength = 0.8 * HEIGHT / Tower.HEIGHT
 
         self.spritesheet = SpriteSheet('playersheet.png')
         self.frames = self.spritesheet.images_at([(180, 10, 160, 160), (350, 10, 160, 160)], Color.WHITE)
@@ -304,14 +290,15 @@ class PlayerArtist():
                 self.switch_frame()
 
         if self.queue:
-            self.pos = (self.pos[0] + (self.queue[0][0]-self.pos[0])/(self.animtime-self.progress),
-                        self.pos[1] + (self.queue[0][1]-self.pos[1])/(self.animtime-self.progress))
+            self.pos = (self.pos[0] + (self.queue[0][0] - self.pos[0]) / (self.animtime - self.progress),
+                        self.pos[1] + (self.queue[0][1] - self.pos[1]) / (self.animtime - self.progress))
             self.progress += 1
 
     def render(self, screen: pygame.Surface, level) -> None:
         """
         renders self onto a screen
         :param screen: pygame surface to blit image on
+        :param level: the level of the tower
         """
         self.rect.center = Tower.calc_center((self.pos[1] - level, self.pos[0]))
         screen.blit(self.frames[self.frame_number], self.rect)

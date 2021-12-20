@@ -26,9 +26,10 @@ from spritesheet import SpriteSheet
 spritesheet = SpriteSheet('abilitysheet.png')
 sprite_size = 68
 
+
 class Ability(ABC):
     """ Renders ability, tracks it CD and executes it """
-    
+
     name = "Void Ability"
     # Coordinates of the upper-left corner of the first frame of animation on the spritesheet
     cordsx = 0
@@ -36,8 +37,7 @@ class Ability(ABC):
 
     def __init__(self, move_sequence=None, cd: int = 5):
         """ Initilizes CD timer, binds ability with the abilitybar
-        :param spritesheet: Spritesheet with all abilities
-        :param move_sequence: Move function(moves:list[tuple[int, int]]) -> None 
+        :param move_sequence: Move function(moves:list[tuple[int, int]]) -> None
         :param cd: cooldown of the ability
         """
         self.cd_left = 0
@@ -106,7 +106,7 @@ class AbilityBar:
             return
         for i, ability in enumerate(ability_bar.abilities):
             self.set_ability(i,
-                ability_list[ability_names.index(ability.name)]())
+                             ability_list[ability_names.index(ability.name)]())
 
     def update(self) -> None:
         """ Updates animation states of abilities """
@@ -140,7 +140,7 @@ class AbilityBar:
 
     def set_ability(self, slot: int, ability: Ability) -> None:
         """
-        Places ability into the slot
+        Places ability into the given slot
         :param slot: the place of the ability on the ability bar, value between 0 and 3
         :param ability: the ability, created, but not constructed
         """
@@ -252,6 +252,7 @@ class Hop(Ability):
     def execute(self) -> None:
         """"""
         self.move_sequence((0, 2))
+
 
 '''
 class Mirror(Ability):

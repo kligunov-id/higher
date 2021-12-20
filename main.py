@@ -1,25 +1,28 @@
 import pygame
 from abc import ABC, abstractmethod
 from button import ButtonList, Button
-from model import Player, Tower
+from model import Tower
 import beatline
 from abilities import ability_list, ability_names, AbilityBar
 from locals import *
+
 
 class Settings:
     """ Singleton class responsible for transferring of settings between different GameStates """
     _instance = None
 
     def __init__(self):
+        """ initiates settings"""
         Settings._instance = self
         self.ability_bar = AbilityBar(None)
 
     @staticmethod
     def get_instance():
-        """ :return: the only instance of the class Settings """
+        """ :returns: the only instance of the class Settings """
         if Settings._instance is None:
             Settings()
         return Settings._instance
+
 
 class GameState(ABC):
     """ Abstract class responsible for controlling all game elements:
@@ -27,6 +30,7 @@ class GameState(ABC):
         * Model and animation states update
         * Screen rendering
     """
+
     def __init__(self):
         pass
 
@@ -66,7 +70,7 @@ class Game:
         .. note: For internal use only
         """
         self.state = new_state
-        
+
         # Passes over function calls to GameState object
         self.render = self.state.render
         self.handle = self.state.handle
@@ -82,25 +86,25 @@ class Game:
 
 class MainMenu(GameState):
     """ Represents the starting menu """
-    
+
     def __init__(self):
         """ Initializes menu with buttons """
         super().__init__()
-        
+
         self.button_list = ButtonList((WIDTH / 2, 0.32 * HEIGHT), 0.18 * HEIGHT)
         # Start button
         self.button_list.construct_button(TEXT.START,
-            action=lambda: Game.switch_to(GameSession()))
+                                          action=lambda: Game.switch_to(GameSession()))
         # Track selection button
         self.button_list.construct_button(TEXT.SELECT_TRACK,
-            action=lambda: Game.switch_to(MusicSelectionMenu()))
+                                          action=lambda: Game.switch_to(MusicSelectionMenu()))
         # Ability selection button
         self.button_list.construct_button(TEXT.SELECT_ABILITY,
-            action=lambda: Game.switch_to(AbilitySelectionMenu()))
+                                          action=lambda: Game.switch_to(AbilitySelectionMenu()))
         # Quit button
         self.button_list.construct_button(TEXT.QUIT,
-            action=exit,
-            keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE])
+                                          action=exit,
+                                          keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE])
 
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
 
@@ -115,7 +119,7 @@ class MainMenu(GameState):
         screen.blit(text_surface, text_rect)
 
         self.button_list.render(screen)
-        
+
         return screen
 
     def update(self) -> None:
@@ -139,12 +143,12 @@ class GameOver(GameState):
         self.button_list = ButtonList((WIDTH / 2, 0.6 * HEIGHT), 0.2 * HEIGHT)
         # Restart button
         self.button_list.construct_button(TEXT.RESTART,
-            action=lambda: Game.switch_to(GameSession()))
+                                          action=lambda: Game.switch_to(GameSession()))
         # Back button
         self.button_list.construct_button(TEXT.BACK_MENU,
-            action=lambda: Game.switch_to(MainMenu()),
-            keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE])
-        
+                                          action=lambda: Game.switch_to(MainMenu()),
+                                          keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE])
+
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
         self.score = score
 
@@ -155,14 +159,14 @@ class GameOver(GameState):
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
 
         score_surface = self.font.render(TEXT.SCORE + str(self.score), True, Color.WHITE)
-        score_rect = score_surface.get_rect(center=(WIDTH/2, 0.2 * HEIGHT))
+        score_rect = score_surface.get_rect(center=(WIDTH / 2, 0.2 * HEIGHT))
         text_surface = self.font.render(TEXT.GAME_OVER, True, Color.WHITE)
         text_rect = text_surface.get_rect(center=(WIDTH / 2, 0.1 * HEIGHT))
         screen.blit(text_surface, text_rect)
         screen.blit(score_surface, score_rect)
 
         self.button_list.render(screen)
-        
+
         return screen
 
     def update(self) -> None:
@@ -222,41 +226,39 @@ class GameSession(GameState):
         if self.beatline.cleanup():
             self.tower.move_floor(1)
 
+
 class MusicSelectionMenu(GameState):
     """ Represents music selection screen accessible from main menu """
 
     def __init__(self):
         """ Initializes buttons and font """
+        super().__init__()
         self.button_list = ButtonList((WIDTH / 2, 0.4 * HEIGHT), 0.4 * HEIGHT)
-        
-        def next():
-            MUSIC.next_title()
-            self.button_list.buttons[0].update_text(MUSIC.TITLE)
 
         self.button_list.construct_scroll(MUSIC.TITLES,
-            post_action=lambda i:MUSIC.set_title(i),
-            starting_i=MUSIC.TITLES.index(MUSIC.TITLE))
+                                          post_action=lambda i: MUSIC.set_title(i),
+                                          starting_i=MUSIC.TITLES.index(MUSIC.TITLE))
         self.button_list.construct_button(TEXT.BACK_MENU,
-            action=lambda: Game.switch_to(MainMenu()),
-            keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE])
+                                          action=lambda: Game.switch_to(MainMenu()),
+                                          keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE])
 
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
 
     def render(self) -> pygame.Surface:
         """ Renders buttons and text """
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-        
+
         text_surface = self.font.render(TEXT.SELECT_TRACK_INVITATION, True, Color.WHITE)
         text_rect = text_surface.get_rect(center=(WIDTH / 2, 0.1 * HEIGHT))
         screen.blit(text_surface, text_rect)
         text_surface = self.font.render(TEXT.DIFFICULTY, True, Color.WHITE)
         text_rect = text_surface.get_rect(center=(WIDTH / 2, 0.6 * HEIGHT))
         screen.blit(text_surface, text_rect)
-        
+
         self.button_list.render(screen)
 
         return screen
-    
+
     def handle(self, event: pygame.event.Event) -> None:
         """ Handles mouse and keyboard input
         :param event: PyGame event to be handled
@@ -267,40 +269,44 @@ class MusicSelectionMenu(GameState):
         """ Animates buttons """
         self.button_list.update()
 
+
 class AbilitySelectionMenu(GameState):
     """ Represents ability selection screen accessible from main menu """
 
     def __init__(self):
         """ Initializes buttons and font """
+        super().__init__()
         self.button_list = ButtonList((WIDTH * 0.6, 0.27 * HEIGHT), 0.15 * HEIGHT)
         self.ability_bar = Settings.get_instance().ability_bar
-        def set_into_slot(k):
-            return lambda i: self.ability_bar.set_ability(k, ability_list[i]())
+
+        def set_into_slot(slot_number: int):
+            return lambda i: self.ability_bar.set_ability(slot_number, ability_list[i]())
+
         for k in range(4):
             self.button_list.construct_scroll(ability_names,
-                post_action=set_into_slot(k),
-                starting_i=ability_names.index(self.ability_bar.abilities[k].name))
+                                              post_action=set_into_slot(k),
+                                              starting_i=ability_names.index(self.ability_bar.abilities[k].name))
 
         self.button_list.add_button(Button(TEXT.BACK_MENU,
-            (WIDTH * 0.6, 0.9 * HEIGHT),
-            action=lambda: Game.switch_to(MainMenu()),
-            keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE]))
+                                           (WIDTH * 0.6, 0.9 * HEIGHT),
+                                           action=lambda: Game.switch_to(MainMenu()),
+                                           keys=[pygame.K_ESCAPE, pygame.K_BACKSPACE]))
 
         self.font = pygame.font.Font(FONT_PATH, FONT_SIZE)
 
     def render(self) -> pygame.Surface:
         """ Renders buttons and text """
         screen = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
-        
+
         text_surface = self.font.render(TEXT.SELECT_ABILITY_INVITATION, True, Color.WHITE)
         text_rect = text_surface.get_rect(center=(WIDTH * 0.6, 0.1 * HEIGHT))
         screen.blit(text_surface, text_rect)
-        
+
         self.button_list.render(screen)
         self.ability_bar.render(screen)
 
         return screen
-    
+
     def handle(self, event: pygame.event.Event) -> None:
         """ Handles mouse and keyboard input
         :param event: PyGame event to be handled

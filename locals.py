@@ -54,6 +54,7 @@ FONT_PATH = path.join('resources', 'fonts', FONT_NAME)
 # In-game text
 TITLE = "Higher"
 
+
 class TEXT:
     """ Stores game text messages as static variables """
     START = "New Game"
@@ -68,8 +69,8 @@ class TEXT:
     SELECT_ABILITY_INVITATION = "Select your abilities: "
     SELECT_ABILITY = "Select Abilities"
 
+
 class MUSIC:
- 
     TITLES = [
         "In the 42nd Street",
         "Opening Animal Crossing",
@@ -90,14 +91,13 @@ class MUSIC:
         "Hell",
         "Hard"
     ]
-    I = -1
-    
+
     TITLE = None
     PATH = None
     BEAT_PATH = None
-    
+
     PLAY_ERROR = "!!! Failed to play music !!!"
-    
+
     @staticmethod
     def set_title(i: int) -> None:
         """ Updates meta info about track
@@ -106,5 +106,6 @@ class MUSIC:
         MUSIC.PATH = path.join("resources", "music", MUSIC.TITLE + ".mp3")
         MUSIC.BEAT_PATH = path.join("resources", "beatlines", MUSIC.TITLE + ".txt")
         TEXT.DIFFICULTY = f"(Difficulty: {MUSIC.DIFFICULTIES[i]})"
+
 
 MUSIC.set_title(0)

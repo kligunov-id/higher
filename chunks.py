@@ -87,7 +87,7 @@ def redo_chunk(difficulty: str, filename: str) -> None:
     """ Transforms a file that denotes empty tiles by '.', holes by 'H' and walls by 'W' \
         into a file that's readable by the load_chunk function
     :param difficulty: difficulty of the chunk
-    :param filename: name of file, including '.txt', or 'all' to redo all files in the resources/chunks/difficulty directory
+    :param filename: name of file, including '.txt', or 'all' to redo all files in resources/chunks/difficulty directory
     """
     dump = open(os.path.join('resources', 'chunks', difficulty, filename), 'r').readlines()
     with open(os.path.join('resources', 'chunks', difficulty, filename), 'w') as f:

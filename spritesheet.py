@@ -13,6 +13,7 @@ Classes:
 pygame.init()
 pygame.display.set_mode((WIDTH, HEIGHT))
 
+
 class SpriteSheet:
     
     """ Is responsible for loading spritesheets from files and extraction of individual sprites"""
@@ -42,7 +43,9 @@ class SpriteSheet:
             image.set_colorkey(colorkey, pygame.RLEACCEL)
         return image
 
-    def images_at(self, rects: list[pygame.Rect], colorkey=None) -> list[pygame.Surface]:
+    def images_at(self,
+                  rects: list[pygame.Rect] | list[tuple[int, int, int, int]],
+                  colorkey=None) -> list[pygame.Surface]:
         """
         Load a whole bunch of images and return them as a list.
         :param rects: rectangles (x, y, width, height) to extract the images at
@@ -51,10 +54,13 @@ class SpriteSheet:
         """
         return [self.image_at(rect, colorkey) for rect in rects]
 
-    def load_strip(self, rect: pygame.Rect, image_count: int, colorkey=None) -> list[pygame.Surface]:
+    def load_strip(self,
+                   rect: pygame.Rect | tuple[int, int, int, int],
+                   image_count: int,
+                   colorkey=None) -> list[pygame.Surface]:
         """
         Load a whole strip of images, and return them as a list.
-        :param rect: rectangle (x, y, width, height) - the rectangle of the left-most image
+        :param rect: pygame.Rect or (x, y, width, height) - the rectangle of the left-most image
         :param image_count: the amount of images
         :param colorkey: colorkey of the images
         :return:  list of the extracted images

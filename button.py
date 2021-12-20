@@ -17,11 +17,13 @@ Functions:
 
 """
 
-def trim(text:str, max_len:int = 30) -> str:
+
+def trim(text: str, max_len: int = 30) -> str:
     """ Trims text"""
     if len(text) > max_len:
-        text = text[:max_len-3] + "..."
+        text = text[:max_len - 3] + "..."
     return text
+
 
 class Button:
     text: str
@@ -48,8 +50,8 @@ class Button:
         self.update_text(text)
         self.keys = keys
         self.active = False
-    
-    def set_active(self, active:bool = True) -> None:
+
+    def set_active(self, active: bool = True) -> None:
         """ Activates or deactivates button
         :param active: True if button should be activated """
         self.active = active
@@ -92,17 +94,18 @@ class Button:
         :returns : True if mouse is hovering over the button
         """
         return self.text_rect.collidepoint(pygame.mouse.get_pos())
-    
+
     def handle(self, event: pygame.event.Event) -> None:
         """ Handles mouse clicks and key presses
         :param event: PyGame event to be handled
         """
         should_trigger = ((event.type == pygame.MOUSEBUTTONDOWN and self.is_mouse_on())
-                       or (event.type == pygame.KEYDOWN and self.keys and event.key in self.keys)
-                       or (event.type == pygame.KEYDOWN and self.active and event.key == pygame.K_RETURN))
+                          or (event.type == pygame.KEYDOWN and self.keys and event.key in self.keys)
+                          or (event.type == pygame.KEYDOWN and self.active and event.key == pygame.K_RETURN))
 
         if should_trigger and self.action is not None:
             self.action()
+
 
 class Scroll:
     """ Provides selection from the number of entries.
@@ -179,7 +182,7 @@ class Scroll:
             screen.blit(self.left_surface, self.left_rect)
             screen.blit(self.right_surface, self.right_rect)
 
-    def set_active(self, active:bool = True) -> None:
+    def set_active(self, active: bool = True) -> None:
         """ Activates or deactivates scroll
         :param active: True if scroll should be activated """
         self.active = active
@@ -207,16 +210,17 @@ class Scroll:
 
     def is_mouse_on_left(self) -> bool:
         """ :return: True if mouse is hovering over the left arrow """
-        return self.left_rect.collidepoint(pygame.mouse.get_pos()) 
-    
+        return self.left_rect.collidepoint(pygame.mouse.get_pos())
+
     def is_mouse_on_right(self) -> bool:
         """ :return: True if mouse is hovering over the right arrow """
         return self.right_rect.collidepoint(pygame.mouse.get_pos())
 
     def is_mouse_on(self) -> bool:
         """ :return: True if mouse is hovering over the scroll"""
-        return (self.text_rect.collidepoint(pygame.mouse.get_pos()) 
-            or self.is_mouse_on_left() or self.is_mouse_on_right())
+        return (self.text_rect.collidepoint(pygame.mouse.get_pos())
+                or self.is_mouse_on_left() or self.is_mouse_on_right())
+
 
 class ButtonList:
     """ Stores a set of buttons, implements navigation. """
@@ -229,15 +233,15 @@ class ButtonList:
         self.i = 0
         self.topmid = topmid
         self.h_step = h_step
-    
-    def add_button(self, button:Button) -> None:
+
+    def add_button(self, button: Button) -> None:
         """ Add already existing button
         :param button: Button instance to add to list
         ..note:: It is preferable to use construct_button()"""
         if not self.buttons:
             button.set_active()
         self.buttons.append(button)
-    
+
     def construct_button(self, text: str, action=None, keys=None) -> None:
         """ Creates new button in place
         :param text: Displayed button text
@@ -250,7 +254,7 @@ class ButtonList:
         if not self.buttons:
             new_button.set_active()
         self.buttons.append(new_button)
-    
+
     def construct_scroll(self, options: list[str], post_action=None, starting_i: int = 0):
         """ Creates and appends new scroll
         :param options: Displayed button text
@@ -293,18 +297,23 @@ class ButtonList:
         for button in self.buttons:
             button.handle(event)
 
+
 if __name__ == '__main__':
     pygame.init()
     pygame.font.init()
 
     screen = pygame.display.set_mode((1200, 600))
-    
+
     names = ["AA", "B", "C"]
     buttons = ButtonList((600, 200), 100)
     buttons.construct_button("Quit", action=exit, keys=[pygame.K_q])
-    buttons.construct_button("Hi " * 20, action=lambda:print("Hi"))
+    buttons.construct_button("Hi " * 20, action=lambda: print("Hi"))
+
+
     def cool_action(i):
         buttons.buttons[1].update_text(names[i])
+
+
     buttons.construct_scroll(names, lambda i: buttons.buttons[1].update_text(names[i]))
     clock = pygame.time.Clock()
     finished = False
